@@ -166,7 +166,7 @@ function updateStatus(message, type) {
 // === CONNECT TO SIGNALING SERVER ===
 function connectWS() {
   try {
-    const url = `ws://localhost:8080/connect/${uuid}`
+    const url = `ws://192.164.235.94:8080/connect/${uuid}`
     addLog(`Connecting to signaling server: ${url}`)
     ws.value = new WebSocket(url)
 
