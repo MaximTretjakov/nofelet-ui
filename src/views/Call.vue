@@ -28,7 +28,7 @@ export default {
     }
 
     const generateCallLink = () => {
-      const baseUrl = 'https://nofelet/call/'
+      const baseUrl = 'https://nofelet.duckdns.org/call/'
       callLink.value = baseUrl + generateUUID()
     }
 
@@ -166,7 +166,7 @@ function updateStatus(message, type) {
 // === CONNECT TO SIGNALING SERVER ===
 function connectWS() {
   try {
-    const url = `wss://192.164.235.94:8443/connect/${uuid}`
+    const url = `wss://nofelet.duckdns.org:8443/connect/${uuid}`
     addLog(`Connecting to signaling server: ${url}`)
     ws.value = new WebSocket(url)
 
