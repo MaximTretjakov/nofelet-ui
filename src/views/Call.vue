@@ -4,6 +4,19 @@
     
     <div class="status" :class="statusClass">{{ statusMessage }}</div>
     
+    <!-- Поле ввода UUID -->
+    <div class="uuid-input-section">
+      <label for="uuid-input">UUID звонка:</label>
+      <input 
+        id="uuid-input"
+        type="text" 
+        v-model="manualUUID" 
+        placeholder="Введите UUID звонка..."
+        class="uuid-input"
+      />
+      <button @click="applyUUID" class="apply-uuid-btn">Применить UUID</button>
+    </div>
+    
     <div class="controls-group">
       <button @click="connect" :disabled="connected">Connect</button>
       <button @click="startCall" :disabled="!connected || calling">Start Call</button>
@@ -66,8 +79,16 @@ import { useRoute } from 'vue-router'
 const ws = ref(null)
 const route = useRoute()
 
-// Извлекаем UUID из query параметра или генерируем новый
+// Ручной ввод UUID
+const manualUUID = ref('')
+
+// UUID для подключения (из URL или ручного ввода)
 const uuid = computed(() => {
+  // Сначала проверяем ручной ввод
+  if (manualUUID.value.trim()) {
+    return manualUUID.value.trim()
+  }
+  
   // Пытаемся извлечь UUID из query параметра (?uuid=...)
   const urlParams = new URLSearchParams(window.location.search)
   const uuidFromUrl = urlParams.get('uuid')
@@ -183,6 +204,23 @@ function clearAnswerTimeout() {
   }
 }
 
+// Применение UUID из поля ввода
+function applyUUID() {
+  if (!manualUUID.value.trim()) {
+    alert('Введите UUID в поле выше')
+    return
+  }
+  
+  addMessage('system', `Применен ручной UUID: ${manualUUID.value.trim()}`)
+  updateStatus('UUID применен. Нажмите Connect для подключения', 'waiting')
+  
+  // Если уже подключены, переподключаемся с новым UUID
+  if (connected.value) {
+    disconnect()
+    setTimeout(() => connect(), 500)
+  }
+}
+
 // Копирование ссылки вызова
 function copyCallLink() {
   navigator.clipboard.writeText(callLink.value).then(() => {
@@ -202,7 +240,7 @@ function connect() {
     // Проверяем источник UUID
     const urlParams = new URLSearchParams(window.location.search)
     const uuidFromUrl = urlParams.get('uuid')
-    addMessage('system', `Using UUID: ${uuid.value} ${uuidFromUrl ? '(from invitation link)' : '(newly generated)'}`)
+    addMessage('system', `Using UUID: ${uuid.value} ${uuidFromUrl ? '(from invitation link)' : manualUUID.value ? '(manual input)' : '(newly generated)'}`)
     
     ws.value = new WebSocket(url)
 
@@ -505,7 +543,7 @@ async function acceptCall() {
       if (state === 'connected') {
         updateStatus('Call connected! ✅', 'connected')
       } else if (state === 'disconnected' || state === 'failed') {
-        updateStatus(`Call ${state} ❌`, 'disconnected')
+        updateStatus(`Call ${state} ❌', 'disconnected`)
         calling.value = false
       } else if (state === 'connecting') {
         updateStatus('Connecting... 🔄', 'waiting')
@@ -680,7 +718,7 @@ onMounted(() => {
   // Проверяем источник UUID
   const urlParams = new URLSearchParams(window.location.search)
   const uuidFromUrl = urlParams.get('uuid')
-  addMessage('system', `UUID source: ${uuidFromUrl ? 'from invitation link' : 'newly generated'}`)
+  addMessage('system', `UUID source: ${uuidFromUrl ? 'from invitation link' : manualUUID.value ? 'manual input' : 'newly generated'}`)
 })
 
 onBeforeUnmount(() => {
@@ -715,6 +753,55 @@ h1 {
 .connected { background: #d4edda; color: #155724; }
 .disconnected { background: #f8d7da; color: #721c24; }
 .waiting { background: #fff3cd; color: #856404; }
+
+/* Секция ввода UUID */
+.uuid-input-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  flex-wrap: wrap;
+}
+
+.uuid-input-section label {
+  font-weight: bold;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.uuid-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.uuid-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.apply-uuid-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.apply-uuid-btn:hover {
+  background: #218838;
+}
 
 .controls-group {
   display: flex;
@@ -909,6 +996,16 @@ video {
     padding: 10px;
   }
   
+  .uuid-input-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .uuid-input {
+    min-width: auto;
+  }
+  
   .controls-group {
     gap: 5px;
   }
@@ -958,4 +1055,3 @@ video {
   }
 }
 </style>
-
