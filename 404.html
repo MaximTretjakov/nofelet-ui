@@ -23,6 +23,7 @@
         function redirect() {
             const currentPath = window.location.pathname;
             const searchParams = window.location.search;
+            const hash = window.location.hash;
             
             console.log('404 page caught path:', currentPath);
             
@@ -30,28 +31,44 @@
             const uuid = extractUUIDFromPath();
             
             // Проверяем, не находимся ли мы уже на целевом URL (чтобы избежать зацикливания)
-            const hasUUIDParam = new URLSearchParams(searchParams).has('uuid');
+            const urlParams = new URLSearchParams(searchParams);
+            const hasUUIDParam = urlParams.has('uuid');
+            
+            let targetUrl = '';
             
             if (uuid && !hasUUIDParam) {
-                // Если нашли UUID в пути И нет параметра uuid - перенаправляем на /call/ с параметром
-                const targetUrl = `/nofelet-ui/call/?uuid=${uuid}`;
-                console.log('Extracted UUID from path, redirecting to:', targetUrl);
-                window.location.replace(targetUrl);
-                return;
+                // Случай 1: UUID в пути, но нет в параметрах - перенаправляем на /call/ с параметром
+                targetUrl = `/nofelet-ui/call/?uuid=${uuid}${hash}`;
+                console.log('Case 1: UUID from path →', targetUrl);
+            } 
+            else if (hasUUIDParam) {
+                // Случай 2: Уже есть параметр uuid - значит мы уже на правильной странице, но GitHub Pages все равно показывает 404
+                // Это означает что Vue приложение не загрузилось, идем на главную
+                targetUrl = `/nofelet-ui/${hash}`;
+                console.log('Case 2: Already has UUID param →', targetUrl);
             }
-            
-            if (currentPath.includes('/call') && !hasUUIDParam) {
-                // Если путь содержит /call/ но без параметра uuid - добавляем новый UUID
+            else if (currentPath.includes('/call')) {
+                // Случай 3: Путь /call/ но без UUID - генерируем новый
                 const newUUID = crypto.randomUUID();
-                const targetUrl = `/nofelet-ui/call/?uuid=${newUUID}`;
-                console.log('Call path without UUID, generating new:', targetUrl);
-                window.location.replace(targetUrl);
-                return;
+                targetUrl = `/nofelet-ui/call/?uuid=${newUUID}${hash}`;
+                console.log('Case 3: Call path without UUID →', targetUrl);
+            }
+            else {
+                // Случай 4: Любой другой путь - на главную
+                targetUrl = `/nofelet-ui/${hash}`;
+                console.log('Case 4: Other path →', targetUrl);
             }
             
-            // Если уже есть параметр uuid или другие случаи - идем на главную
-            console.log('Redirecting to home page');
-            window.location.replace('/nofelet-ui/');
+            // Выполняем перенаправление только если целевой URL отличается от текущего
+            const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+            const targetPath = targetUrl.split('?')[0];
+            
+            if (currentPath !== targetPath && !hasUUIDParam) {
+                console.log('Redirecting to:', targetUrl);
+                window.location.replace(targetUrl);
+            } else {
+                console.log('Already on target page or has UUID param, no redirect needed');
+            }
         }
 
         // Запускаем перенаправление при загрузке
@@ -105,23 +122,26 @@
 </head>
 <body>
     <div class="container">
-        <h1>Redirecting...</h1>
+        <h1>Redirecting to Video Call...</h1>
         <div class="spinner"></div>
-        <p>Taking you to your video call.</p>
-        <p>If you are not redirected automatically, <a href="/nofelet-ui/" id="manualLink">click here</a>.</p>
+        <p>Please wait while we take you to your video call.</p>
+        <p>If you are not redirected automatically, <a href="/nofelet-ui/call/" id="manualLink">click here to start a new call</a>.</p>
     </div>
 
     <script>
-        // Fallback для manual link
+        // Fallback для manual link - ведет на call страницу
         document.getElementById('manualLink').addEventListener('click', function(e) {
             e.preventDefault();
-            window.location.href = '/nofelet-ui/';
+            const newUUID = crypto.randomUUID();
+            window.location.href = `/nofelet-ui/call/?uuid=${newUUID}`;
         });
         
         // Fallback на случай если JS не сработает через 3 секунды
         setTimeout(() => {
-            if (!window.location.pathname.includes('/nofelet-ui/call/')) {
-                window.location.href = '/nofelet-ui/';
+            // Если все еще на 404 странице, идем на call
+            if (window.location.pathname.includes('404') || !window.location.pathname.includes('/nofelet-ui/call/')) {
+                const newUUID = crypto.randomUUID();
+                window.location.href = `/nofelet-ui/call/?uuid=${newUUID}`;
             }
         }, 3000);
     </script>
