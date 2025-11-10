@@ -1,7 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta http-equiv="refresh" content="0; url=/" />
-  </head>
-  <body></body>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Video Call - Redirecting</title>
+    <script>
+        // Функция для извлечения UUID из пути
+        function extractUUIDFromPath() {
+            const path = window.location.pathname;
+            const pathParts = path.split('/');
+            
+            // Ищем UUID в пути (формат: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+            for (let part of pathParts) {
+                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(part)) {
+                    return part;
+                }
+            }
+            return null;
+        }
+
+        // Основная логика перенаправления
+        function redirect() {
+            const currentPath = window.location.pathname;
+            const searchParams = window.location.search;
+            const hash = window.location.hash;
+            
+            console.log('404 page caught path:', currentPath);
+            
+            // Извлекаем UUID из пути если есть
+            const uuid = extractUUIDFromPath();
+            
+            let targetUrl = '/nofelet-ui/';
+            
+            if (uuid) {
+                // Если нашли UUID в пути - перенаправляем на /call/ с параметром
+                targetUrl = `/nofelet-ui/call/?uuid=${uuid}`;
+                console.log('Extracted UUID from path, redirecting to:', targetUrl);
+            } else if (currentPath.includes('/call')) {
+                // Если путь содержит /call/ но без UUID - сохраняем как есть
+                targetUrl = `/nofelet-ui/call/${searchParams}${hash}`;
+                console.log('Call path detected, redirecting to:', targetUrl);
+            }
+            
+            // Выполняем перенаправление
+            window.location.replace(targetUrl);
+        }
+
+        // Запускаем перенаправление при загрузке
+        redirect();
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 20px;
+            text-align: center;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Redirecting...</h1>
+        <div class="spinner"></div>
+        <p>Taking you to your video call.</p>
+        <p>If you are not redirected automatically, <a href="/nofelet-ui/" id="manualLink">click here</a>.</p>
+    </div>
+
+    <script>
+        // Fallback для manual link
+        document.getElementById('manualLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '/nofelet-ui/';
+        });
+        
+        // Fallback на случай если JS не сработает через 3 секунды
+        setTimeout(() => {
+            if (window.location.pathname.includes('/nofelet-ui/')) {
+                return; // Уже перенаправлено
+            }
+            window.location.href = '/nofelet-ui/';
+        }, 3000);
+    </script>
+</body>
 </html>
