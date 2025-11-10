@@ -23,27 +23,35 @@
         function redirect() {
             const currentPath = window.location.pathname;
             const searchParams = window.location.search;
-            const hash = window.location.hash;
             
             console.log('404 page caught path:', currentPath);
             
             // Извлекаем UUID из пути если есть
             const uuid = extractUUIDFromPath();
             
-            let targetUrl = '/nofelet-ui/';
+            // Проверяем, не находимся ли мы уже на целевом URL (чтобы избежать зацикливания)
+            const hasUUIDParam = new URLSearchParams(searchParams).has('uuid');
             
-            if (uuid) {
-                // Если нашли UUID в пути - перенаправляем на /call/ с параметром
-                targetUrl = `/nofelet-ui/call/?uuid=${uuid}`;
+            if (uuid && !hasUUIDParam) {
+                // Если нашли UUID в пути И нет параметра uuid - перенаправляем на /call/ с параметром
+                const targetUrl = `/nofelet-ui/call/?uuid=${uuid}`;
                 console.log('Extracted UUID from path, redirecting to:', targetUrl);
-            } else if (currentPath.includes('/call')) {
-                // Если путь содержит /call/ но без UUID - сохраняем как есть
-                targetUrl = `/nofelet-ui/call/${searchParams}${hash}`;
-                console.log('Call path detected, redirecting to:', targetUrl);
+                window.location.replace(targetUrl);
+                return;
             }
             
-            // Выполняем перенаправление
-            window.location.replace(targetUrl);
+            if (currentPath.includes('/call') && !hasUUIDParam) {
+                // Если путь содержит /call/ но без параметра uuid - добавляем новый UUID
+                const newUUID = crypto.randomUUID();
+                const targetUrl = `/nofelet-ui/call/?uuid=${newUUID}`;
+                console.log('Call path without UUID, generating new:', targetUrl);
+                window.location.replace(targetUrl);
+                return;
+            }
+            
+            // Если уже есть параметр uuid или другие случаи - идем на главную
+            console.log('Redirecting to home page');
+            window.location.replace('/nofelet-ui/');
         }
 
         // Запускаем перенаправление при загрузке
@@ -112,10 +120,9 @@
         
         // Fallback на случай если JS не сработает через 3 секунды
         setTimeout(() => {
-            if (window.location.pathname.includes('/nofelet-ui/')) {
-                return; // Уже перенаправлено
+            if (!window.location.pathname.includes('/nofelet-ui/call/')) {
+                window.location.href = '/nofelet-ui/';
             }
-            window.location.href = '/nofelet-ui/';
         }, 3000);
     </script>
 </body>
