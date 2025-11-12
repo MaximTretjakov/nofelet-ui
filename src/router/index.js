@@ -1,28 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '@/views/Home.vue'
-import Call from '@/views/Call.vue'
-import CallReceiver from '@/views/CallReceiver.vue'
+import Caller from '@/views/Caller.vue'
+import Callee from '@/views/Callee.vue'
 
 const routes = [
+  { path: '/', redirect: '/caller' },
+  { path: '/caller', name: 'Caller', component: Caller },
+  { path: '/callee', name: 'Callee', component: Callee },
+  // invite short link -> redirect to callee with query param for auto-connect
   {
-    path: '/',
-    name: 'Home', 
-    component: Home
-  },
-  {
-    path: '/call',
-    name: 'Call', 
-    component: Call
-  },
-  {
-    path: '/callee',
-    name: 'Callee',
-    component: CallReceiver
+  path: '/invite/:uuid',
+  name: 'InviteRedirect',
+  beforeEnter: (to, from, next) => {
+    const uuid = to.params.uuid
+    next(`/callee?uuid=${uuid}`)
   }
+},
 ]
 
 const router = createRouter({
-  history: createWebHistory('/nofelet-ui/'),
+  history: createWebHistory(),
   routes
 })
 
