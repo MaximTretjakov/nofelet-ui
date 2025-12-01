@@ -25,7 +25,7 @@
     <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon.ico">
     <meta name="theme-color" content="#7952b3">
     <!-- Custom styles for this template -->
-    <link href="./cover.css" rel="stylesheet">
+    <link href="https://deploy-preview-10--nofelet.netlify.app/cover.css" rel="stylesheet">
 </head>
 <body class="d-flex h-100 text-center text-white bg-dark">
 <div class="container text-center">
@@ -72,7 +72,7 @@
         </div>
     </div>
 </div>
-<script src="./menu.js"></script>
+<script src="https://deploy-preview-10--nofelet.netlify.app/menu.js"></script>
 
 <!-- WebRTC логика-->
 <script>
@@ -142,9 +142,8 @@
 
                 if (message.type === 'offer') {
                     receivedOffer = message;
-                    // document.getElementById('offerInput').value = JSON.stringify(message);
                     startBlinkingButton('acceptCallBtn', 500);
-                    document.getElementById('acceptCallBtn').disabled = false; // заставить мигать кнопку
+                    document.getElementById('acceptCallBtn').disabled = false; 
                     document.getElementById('hangUpBtn').disabled = false;
                     updateStatus('Incoming call... Click Accept', 'waiting');
                     addMessage('system', 'Offer received from caller');
@@ -174,7 +173,6 @@
 
     async function acceptCall() {
         clearInterval(blinkIntervalId);
-        // Проверяем есть ли offer от signaling или manual input
         if (!receivedOffer) {
             const offerText = document.getElementById('offerInput').value.trim();
             if (offerText) {
@@ -401,7 +399,7 @@
 
         const button = document.getElementById('acceptCallBtn');
         button.style.backgroundColor = 'white';
-        button.style.color = 'black'; // Делаем текст черным для контраста
+        button.style.color = 'black';
 
         if (ws) ws.close();
         updateStatus('Disconnected', 'disconnected');
