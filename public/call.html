@@ -135,7 +135,7 @@
         inviteUrl();
 
         try {
-            ws = new WebSocket(`ws://localhost:8080/connect/${uuid}`);
+            ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
 
             ws.onopen = () => {
                 document.getElementById('startCallBtn').disabled = true;
@@ -339,17 +339,6 @@
             // Записываем время начала ожидания
             answerWaitStartTime = Date.now();
 
-            // // Таймаут ожидания answer
-            // answerTimeout = setTimeout(() => {
-            //     const elapsed = Math.round((Date.now() - answerWaitStartTime) / 1000);
-            //     if (peerConnection && peerConnection.signalingState === 'have-local-offer') {
-            //         console.log('error', `No answer received after ${elapsed} seconds - giving up`);
-            //         console.log('system', 'Click "Hang Up" and try again');
-            //         console.log('No answer received - call failed', 'disconnected');
-            //         document.getElementById('startCallBtn').disabled = false;
-            //     }
-            // }, 30000);
-
         } catch (error) {
             console.log('error', 'Failed to start call: ' + error.message);
             console.log('Call failed', 'disconnected');
@@ -518,7 +507,7 @@
     }
 
     function inviteUrl() {
-        document.getElementById('invite').innerText = 'Ссылка приглашение ->  ' + `${window.location.origin}/Users/maxim/Documents/balun/callee.html?uuid=${uuid}`;
+        document.getElementById('invite').innerText = 'Ссылка приглашение ->  ' + `${window.location.origin}/callee.html?uuid=${uuid}`;
     }
 
     window.onload = connect;

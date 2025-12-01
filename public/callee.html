@@ -129,8 +129,7 @@
 
     async function connect() {
         try {
-
-            ws = new WebSocket(`ws://localhost:8080/connect/${uuid}`);
+            ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
 
             ws.onopen = () => {
                 updateStatus('Connected to signaling server', 'connected');
