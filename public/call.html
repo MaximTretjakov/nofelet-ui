@@ -25,7 +25,7 @@
     <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon.ico">
     <meta name="theme-color" content="#7952b3">
     <!-- Custom styles for this template -->
-    <link href="https://deploy-preview-10--nofelet.netlify.app/cover.css" rel="stylesheet">
+    <link href="./cover.css" rel="stylesheet">
 </head>
 <body class="d-flex h-100 text-center text-white bg-dark">
 <div class="container text-center">
@@ -79,7 +79,7 @@
         <div class="col-sm"></div>
     </div>
 </div>
-<script src="https://deploy-preview-10--nofelet.netlify.app/menu.js"></script>
+<script src="./menu.js"></script>
 
 <!-- WebRTC логика-->
 <script>
@@ -338,17 +338,6 @@
 
             // Записываем время начала ожидания
             answerWaitStartTime = Date.now();
-
-            // // Таймаут ожидания answer
-            // answerTimeout = setTimeout(() => {
-            //     const elapsed = Math.round((Date.now() - answerWaitStartTime) / 1000);
-            //     if (peerConnection && peerConnection.signalingState === 'have-local-offer') {
-            //         console.log('error', `No answer received after ${elapsed} seconds - giving up`);
-            //         console.log('system', 'Click "Hang Up" and try again');
-            //         console.log('No answer received - call failed', 'disconnected');
-            //         document.getElementById('startCallBtn').disabled = false;
-            //     }
-            // }, 30000);
 
         } catch (error) {
             console.log('error', 'Failed to start call: ' + error.message);

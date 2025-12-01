@@ -129,7 +129,6 @@
 
     async function connect() {
         try {
-
             ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
 
             ws.onopen = () => {
