@@ -130,7 +130,7 @@
     async function connect() {
         try {
 
-            ws = new WebSocket(`ws://localhost:8080/connect/${uuid}`);
+            ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${this.uuid}`);
 
             ws.onopen = () => {
                 updateStatus('Connected to signaling server', 'connected');
@@ -143,9 +143,8 @@
 
                 if (message.type === 'offer') {
                     receivedOffer = message;
-                    // document.getElementById('offerInput').value = JSON.stringify(message);
                     startBlinkingButton('acceptCallBtn', 500);
-                    document.getElementById('acceptCallBtn').disabled = false; // заставить мигать кнопку
+                    document.getElementById('acceptCallBtn').disabled = false; 
                     document.getElementById('hangUpBtn').disabled = false;
                     updateStatus('Incoming call... Click Accept', 'waiting');
                     addMessage('system', 'Offer received from caller');
@@ -175,7 +174,6 @@
 
     async function acceptCall() {
         clearInterval(blinkIntervalId);
-        // Проверяем есть ли offer от signaling или manual input
         if (!receivedOffer) {
             const offerText = document.getElementById('offerInput').value.trim();
             if (offerText) {
@@ -402,7 +400,7 @@
 
         const button = document.getElementById('acceptCallBtn');
         button.style.backgroundColor = 'white';
-        button.style.color = 'black'; // Делаем текст черным для контраста
+        button.style.color = 'black';
 
         if (ws) ws.close();
         updateStatus('Disconnected', 'disconnected');
