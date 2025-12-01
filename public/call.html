@@ -25,7 +25,7 @@
     <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon.ico">
     <meta name="theme-color" content="#7952b3">
     <!-- Custom styles for this template -->
-    <link href="./cover.css" rel="stylesheet">
+    <link href="https://deploy-preview-10--nofelet.netlify.app/cover.css" rel="stylesheet">
 </head>
 <body class="d-flex h-100 text-center text-white bg-dark">
 <div class="container text-center">
@@ -79,7 +79,7 @@
         <div class="col-sm"></div>
     </div>
 </div>
-<script src="./menu.js"></script>
+<script src="https://deploy-preview-10--nofelet.netlify.app/menu.js"></script>
 
 <!-- WebRTC логика-->
 <script>
@@ -135,7 +135,7 @@
         inviteUrl();
 
         try {
-            ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${this.uuid}`);
+            ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
 
             ws.onopen = () => {
                 document.getElementById('startCallBtn').disabled = true;
@@ -522,7 +522,7 @@
     }
 
     window.onload = connect;
-    
+
 </script>
 
 </body>
