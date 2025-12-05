@@ -263,13 +263,7 @@
                     document.getElementById('startCallBtn').disabled = false;
                     updateStatusCallee('Offline...')
                     if (state === 'failed') {
-                        console.log('error', 'Connection failed - trying to restart ICE...');
-                        setTimeout(() => {
-                            if (peerConnection && peerConnection.connectionState === 'failed') {
-                                peerConnection.restartIce();
-                                console.log('system', 'ICE restart triggered');
-                            }
-                        }, 2000);
+                        console.log('error', 'Connection failed - try once more...');
                     }
                 } else if (state === 'connecting') {
                     console.log('Connecting... 🔄', 'waiting');
