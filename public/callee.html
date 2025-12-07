@@ -86,6 +86,9 @@
     let iceCandidatesQueue = [];
     let uuid = new URLSearchParams(window.location.search).get('uuid');
 
+    const closeCode = 1000; // Код 1000 означает нормальное закрытие
+    const closeReason = 'Работа завершена, соединение закрыто.';
+
     // ТА ЖЕ КОНФИГУРАЦИЯ С TURN СЕРВЕРАМИ
     const configuration = {
         iceServers: [
@@ -160,11 +163,16 @@
                 addMessage('system', 'Signaling error: ' + error);
             };
 
-            ws.onclose = () => {
-                updateStatus('Disconnected from signaling', 'disconnected');
-                addMessage('system', 'Disconnected from signaling server');
-                document.getElementById('acceptCallBtn').disabled = true;
-                document.getElementById('hangUpBtn').disabled = false;
+            ws.onclose = (event) => {
+                if (event.wasClean) {
+                    console.log(`Disconnected from signaling server. Код: ${event.code}, Причина: ${event.reason}`);
+                    addMessage('system', 'Disconnected from signaling server');
+                    document.getElementById('acceptCallBtn').disabled = true;
+                    document.getElementById('hangUpBtn').disabled = false;
+                } else {
+                    console.log('Соединение оборвалось.'); 
+                    console.log(`Код: ${event.code}, Причина: ${event.reason}`);
+                }
             };
         } catch (error) {
             addMessage('error', 'Connection error: ' + error.message);
@@ -401,7 +409,11 @@
         button.style.backgroundColor = 'white';
         button.style.color = 'black';
 
-        if (ws) ws.close();
+        if (ws) {
+            ws.close(closeCode, closeReason);
+            ws = null;
+        }
+        
         updateStatus('Disconnected', 'disconnected');
     }
 
