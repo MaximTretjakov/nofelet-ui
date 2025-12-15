@@ -25,7 +25,7 @@
     <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon.ico">
     <meta name="theme-color" content="#7952b3">
     <!-- Custom styles for this template -->
-    <link href="https://deploy-preview-10--nofelet.netlify.app/cover.css" rel="stylesheet">
+    <link href="./cover.css" rel="stylesheet">
 </head>
 <body class="d-flex h-100 text-center text-white bg-dark">
 <div class="container text-center">
@@ -72,7 +72,7 @@
         </div>
     </div>
 </div>
-<script src="https://deploy-preview-10--nofelet.netlify.app/menu.js"></script>
+<script src="./menu.js"></script>
 
 <!-- WebRTC логика-->
 <script>
@@ -82,42 +82,11 @@
     let remoteStream = null;
     let receivedOffer = null;
     let blinkIntervalId = null;
-    let flag = false;
     let iceCandidatesQueue = [];
     let uuid = new URLSearchParams(window.location.search).get('uuid');
 
-    const closeCode = 1000; // Код 1000 означает нормальное закрытие
-    const closeReason = 'Работа завершена, соединение закрыто.';
-
     // ТА ЖЕ КОНФИГУРАЦИЯ С TURN СЕРВЕРАМИ
     const configuration = {
-        iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' },
-            {
-                urls: 'turn:openrelay.metered.ca:80',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            },
-            {
-                urls: 'turn:openrelay.metered.ca:443',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            },
-            {
-                urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            },
-            {
-                urls: 'turn:turn.anyfirewall.com:443?transport=tcp',
-                username: 'webrtc',
-                credential: 'webrtc'
-            }
-        ],
         iceCandidatePoolSize: 10,
         iceTransportPolicy: 'all',
         bundlePolicy: 'max-bundle',
@@ -146,7 +115,7 @@
                 if (message.type === 'offer') {
                     receivedOffer = message;
                     startBlinkingButton('acceptCallBtn', 500);
-                    document.getElementById('acceptCallBtn').disabled = false; 
+                    document.getElementById('acceptCallBtn').disabled = false;
                     document.getElementById('hangUpBtn').disabled = false;
                     updateStatus('Incoming call... Click Accept', 'waiting');
                     addMessage('system', 'Offer received from caller');
@@ -164,15 +133,13 @@
             };
 
             ws.onclose = (event) => {
-                if (event.wasClean) {
-                    console.log(`Disconnected from signaling server. Код: ${event.code}, Причина: ${event.reason}`);
-                    addMessage('system', 'Disconnected from signaling server');
-                    document.getElementById('acceptCallBtn').disabled = true;
-                    document.getElementById('hangUpBtn').disabled = false;
-                } else {
-                    console.log('Соединение оборвалось.'); 
-                    console.log(`Код: ${event.code}, Причина: ${event.reason}`);
-                }
+                updateStatus('Disconnected from signaling', 'disconnected');
+                addMessage('system', 'Disconnected from signaling server');
+                console.log('Code:', event.code);
+                console.log('Reason:', event.reason);
+                console.log('Was clean?', event.wasClean);
+                document.getElementById('acceptCallBtn').disabled = true;
+                document.getElementById('hangUpBtn').disabled = false;
             };
         } catch (error) {
             addMessage('error', 'Connection error: ' + error.message);
@@ -181,20 +148,20 @@
 
     async function acceptCall() {
         clearInterval(blinkIntervalId);
-        if (!receivedOffer) {
-            const offerText = document.getElementById('offerInput').value.trim();
-            if (offerText) {
-                try {
-                    receivedOffer = JSON.parse(offerText);
-                    addMessage('system', 'Using manual offer from textarea');
-                } catch (e) {
-                    alert('Invalid offer format in textarea');
-                    return;
-                }
-            } else {
-                alert('No offer received yet! Check signaling connection or paste offer manually.');
-                return;
-            }
+
+        try {
+            // 1. Асинхронно дожидаемся получения КРЕДЕНЦИАЛОВ TURN
+            console.log('system', 'Fetching CoTURN credentials...');
+            const turnServers = await getCoTURNCredentialsAsync();
+
+            // 2. ОБНОВЛЯЕМ конфигурацию ПЕРЕД созданием PeerConnection
+            configuration.iceServers = turnServers;
+            console.log('system', 'Configuration updated with fresh TURN credentials');
+
+            // 3. Создаем PeerConnection (теперь с гарантированно актуальной конфой)
+            peerConnection = new RTCPeerConnection(configuration);
+        } catch (error) {
+            console.error("Ошибка при получении TURN кредов или старте звонка:", error);
         }
 
         try {
@@ -217,6 +184,9 @@
             // Показываем локальное видео
             document.getElementById('localVideo').srcObject = localStream;
             addMessage('system', 'Local media stream acquired');
+
+            // Идем за временными кредами CoTURN
+            // await getCoTURNCredentials();
 
             // Создаем PeerConnection
             peerConnection = new RTCPeerConnection(configuration);
@@ -335,6 +305,13 @@
             addMessage('system', 'Local description set');
             logConnectionStates();
 
+            peerConnection.onicegatheringstatechange = () => {
+                if (peerConnection.iceGatheringState === 'complete') {
+                    // Теперь можно безопасно отправить SDP offer/answer удаленному пиру
+                    console.log('system', 'IceGatheringState - complete');
+                }
+            };
+
             // Отправляем answer через signaling
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
@@ -407,13 +384,9 @@
 
         const button = document.getElementById('acceptCallBtn');
         button.style.backgroundColor = 'white';
-        button.style.color = 'black';
+        button.style.color = 'black'; // Делаем текст черным для контраста
 
-        if (ws) {
-            ws.close(closeCode, closeReason);
-            ws = null;
-        }
-        
+        if (ws) ws.close(1000, "Signaling complete");
         updateStatus('Disconnected', 'disconnected');
     }
 
@@ -508,6 +481,38 @@
                 button.style.color = 'white'; // Делаем текст белым для контраста
             }
         }, intervalTime);
+    }
+
+    // Перепишите функцию, чтобы она стала асинхронной и возвращала Promise
+    function getCoTURNCredentialsAsync() {
+        return new Promise((resolve, reject) => {
+            try {
+                // Используем тот же код, но меняем логику обработки
+                const wsTurn = new WebSocket(`wss://nofelet.duckdns.org:8443/turn-credentials/generate`);
+
+                wsTurn.onopen = () => {
+                    console.log('Connected to TURN signaling server');
+                };
+
+                wsTurn.onmessage = (event) => {
+                    const creds = JSON.parse(event.data);
+                    // Как только данные получены, резолвим промис с новыми серверами
+                    resolve(creds.iceServers);
+                    wsTurn.close(); // Закрываем соединение после получения кредов
+                };
+
+                wsTurn.onerror = (error) => {
+                    console.error('Signaling error: ' + error);
+                    reject(error); // Отклоняем промис в случае ошибки
+                };
+
+                wsTurn.onclose = (event) => {
+                    console.log('Disconnected from TURN signaling server');
+                };
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 
     window.onload = connect;
