@@ -88,46 +88,10 @@
     let localStream = null;
     let remoteStream = null;
     let iceCandidatesQueue = [];
-    let answerTimeout = null;
-    let answerWaitStartTime = null;
     let uuid = crypto.randomUUID();
-
-    const closeCode = 1000; // Код 1000 означает нормальное закрытие
-    const closeReason = 'Работа завершена, соединение закрыто.';
 
     // КОНФИГУРАЦИЯ С TURN СЕРВЕРАМИ
     const configuration = {
-        iceServers: [
-            // STUN серверы
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' },
-
-            // Публичные TURN серверы (важно для NAT)
-            {
-                urls: 'turn:openrelay.metered.ca:80',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            },
-            {
-                urls: 'turn:openrelay.metered.ca:443',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            },
-            {
-                urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            },
-            // Дополнительные TURN серверы
-            {
-                urls: 'turn:turn.anyfirewall.com:443?transport=tcp',
-                username: 'webrtc',
-                credential: 'webrtc'
-            }
-        ],
         iceCandidatePoolSize: 10,
         iceTransportPolicy: 'all',
         bundlePolicy: 'max-bundle',
@@ -168,21 +132,35 @@
                 console.log('Signaling error: ' + error);
             };
 
-            ws.onclose = (event) => {
-                if (event.wasClean) {
-                    console.log(`Disconnected from signaling server. Код: ${event.code}, Причина: ${event.reason}`);
-                    document.getElementById('startCallBtn').disabled = true;
-                } else {
-                    console.log('Соединение оборвалось.'); 
-                    console.log(`Код: ${event.code}, Причина: ${event.reason}`);
-                }
+            ws.onclose = async (event) => {
+                console.log('Disconnected from signaling server');
+                console.log('Code:', event.code);
+                console.log('Reason:', event.reason);
+                console.log('Was clean?', event.wasClean);
+                document.getElementById('startCallBtn').disabled = true;
             };
         } catch (error) {
-            console.log('Signaling error: ' + error.message);
+            console.log('Signaling error: ' + error.message.toString());
         }
     }
 
     async function startCall() {
+        try {
+            // 1. Асинхронно дожидаемся получения КРЕДЕНЦИАЛОВ TURN
+            console.log('system', 'Fetching CoTURN credentials...');
+            const turnServers = await getCoTURNCredentialsAsync();
+
+            // 2. ОБНОВЛЯЕМ конфигурацию ПЕРЕД созданием PeerConnection
+            configuration.iceServers = turnServers;
+            console.log('system', 'Configuration updated with fresh TURN credentials');
+
+            // 3. Создаем PeerConnection (теперь с гарантированно актуальной конфой)
+            peerConnection = new RTCPeerConnection(configuration);
+        } catch (error) {
+            console.error("Ошибка при получении TURN кредов или старте звонка:", error);
+        }
+
+
         if (!ws || ws.readyState !== WebSocket.OPEN) {
             alert('First connect to signaling server!');
             return;
@@ -208,6 +186,9 @@
             // Показываем локальное видео
             document.getElementById('localVideo').srcObject = localStream;
             console.log('system', 'Local media stream acquired');
+
+            // Идем за временными кредами CoTURN
+            // await getCoTURNCredentials();
 
             // Создаем PeerConnection
             peerConnection = new RTCPeerConnection(configuration);
@@ -265,13 +246,14 @@
                     document.getElementById('hangUpBtn').disabled = false;
                     document.getElementById('startCallBtn').disabled = true;
                     updateStatusCaller('Caller connected')
+                    ws.close(1000, "Signaling complete");
                 } else if (state === 'disconnected' || state === 'failed') {
                     console.log(`Call ${state} ❌`, 'disconnected');
                     document.getElementById('hangUpBtn').disabled = false;
                     document.getElementById('startCallBtn').disabled = false;
                     updateStatusCallee('Offline...')
                     if (state === 'failed') {
-                        console.log('error', 'Connection failed - try once more...');
+                        console.log('error', 'Connection failed...');
                     }
                 } else if (state === 'connecting') {
                     console.log('Connecting... 🔄', 'waiting');
@@ -322,6 +304,12 @@
             await peerConnection.setLocalDescription(offer);
             console.log('system', 'Local description set');
 
+            peerConnection.onicegatheringstatechange = () => {
+                if (peerConnection.iceGatheringState === 'complete') {
+                    console.log('system', 'IceGatheringState - complete');
+                }
+            };
+
             // Отправляем offer через signaling
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
@@ -337,12 +325,8 @@
             console.log('system', 'Waiting for answer from callee...');
             console.log('Waiting for answer... ⏳', 'waiting');
             document.getElementById('startCallBtn').disabled = true;
-
-            // Записываем время начала ожидания
-            answerWaitStartTime = Date.now();
-
         } catch (error) {
-            console.log('error', 'Failed to start call: ' + error.message);
+            console.log('error', 'Failed to start call: ' + error.message.toString());
             console.log('Call failed', 'disconnected');
         }
     }
@@ -366,17 +350,13 @@
                         await peerConnection.addIceCandidate(candidate);
                         console.log('ice', 'Added queued ICE candidate');
                     } catch (err) {
-                        console.log('error', 'Error adding queued candidate: ' + err.message);
+                        console.log('error', 'Error adding queued candidate: ' + err.message.toString());
                     }
                 }
                 iceCandidatesQueue = [];
             }
-
-            // Обновляем текстовое поле для ручного ввода
-            document.getElementById('answerInput').value = JSON.stringify(answer);
-
         } catch (error) {
-            console.log('error', 'Error setting answer: ' + error.message);
+            console.log('error', 'Error setting answer: ' + error.message.toString());
         }
     }
 
@@ -397,7 +377,7 @@
                 console.log('ice', `Queued ICE candidate (${iceCandidatesQueue.length} pending)`);
             }
         } catch (error) {
-            console.log('error', 'Error adding ICE candidate: ' + error.message);
+            console.log('error', 'Error adding ICE candidate: ' + error.message.toString());
         }
     }
 
@@ -429,7 +409,7 @@
         document.getElementById('hangUpBtn').disabled = true;
 
         if (ws) {
-            ws.close(closeCode, closeReason);
+            ws.close(1000, "Normal Closure");
             ws = null;
         }
         console.log('Disconnected', 'disconnected');
@@ -460,13 +440,11 @@
         const isVideoOn = !videoOffSVG.classList.contains('hidden');
         if (isVideoOn){
             toggleButton.setAttribute('aria-label', 'Выключить видео');
-            // document.getElementById('localVideo').srcObject = null;
             localStream.getVideoTracks().forEach(track => {
                 track.enabled = false;
             });
             console.log('Видео отключено локально и у пира.');
         }else {
-            // document.getElementById('localVideo').srcObject = localStream;
             localStream.getVideoTracks().forEach(track => {
                 track.enabled = true;
             });
@@ -512,8 +490,38 @@
         document.getElementById('invite').innerText = 'Ссылка приглашение ->  ' + `${window.location.origin}/callee.html?uuid=${uuid}`;
     }
 
-    window.onload = connect;
+    // Перепишите функцию, чтобы она стала асинхронной и возвращала Promise
+    function getCoTURNCredentialsAsync() {
+        return new Promise((resolve, reject) => {
+            try {
+                const wsTurn = new WebSocket(`wss://nofelet.duckdns.org:8443/turn-credentials/generate`);
 
+                wsTurn.onopen = () => {
+                    console.log('Connected to TURN signaling server');
+                };
+
+                wsTurn.onmessage = (event) => {
+                    const creds = JSON.parse(event.data);
+                    // Как только данные получены, резолвим промис с новыми серверами
+                    resolve(creds.iceServers);
+                    wsTurn.close(); // Закрываем соединение после получения кредов
+                };
+
+                wsTurn.onerror = (error) => {
+                    console.error('Signaling error: ' + error);
+                    reject(error); // Отклоняем промис в случае ошибки
+                };
+
+                wsTurn.onclose = (event) => {
+                    console.log('Disconnected from TURN signaling server');
+                };
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    window.onload = connect;
 </script>
 
 </body>
