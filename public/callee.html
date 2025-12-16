@@ -148,22 +148,6 @@
 
     async function acceptCall() {
         clearInterval(blinkIntervalId);
-
-        try {
-            // 1. Асинхронно дожидаемся получения КРЕДЕНЦИАЛОВ TURN
-            console.log('system', 'Fetching CoTURN credentials...');
-            const turnServers = await getCoTURNCredentialsAsync();
-
-            // 2. ОБНОВЛЯЕМ конфигурацию ПЕРЕД созданием PeerConnection
-            configuration.iceServers = turnServers;
-            console.log('system', 'Configuration updated with fresh TURN credentials');
-
-            // 3. Создаем PeerConnection (теперь с гарантированно актуальной конфой)
-            peerConnection = new RTCPeerConnection(configuration);
-        } catch (error) {
-            console.error("Ошибка при получении TURN кредов или старте звонка:", error);
-        }
-
         try {
             addMessage('system', 'Accepting call...');
             iceCandidatesQueue = [];
@@ -189,8 +173,11 @@
             // await getCoTURNCredentials();
 
             // Создаем PeerConnection
+            console.log('system', 'Fetching CoTURN credentials...');
+            const turnServers = await getCoTURNCredentialsAsync();
+            configuration.iceServers = turnServers;
+            console.log('system', 'Configuration updated with fresh TURN credentials');
             peerConnection = new RTCPeerConnection(configuration);
-            addMessage('system', 'PeerConnection created with TURN servers');
             logConnectionStates();
 
             // Создаем удаленный поток для remote video

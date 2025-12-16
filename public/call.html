@@ -145,22 +145,6 @@
     }
 
     async function startCall() {
-        try {
-            // 1. Асинхронно дожидаемся получения КРЕДЕНЦИАЛОВ TURN
-            console.log('system', 'Fetching CoTURN credentials...');
-            const turnServers = await getCoTURNCredentialsAsync();
-
-            // 2. ОБНОВЛЯЕМ конфигурацию ПЕРЕД созданием PeerConnection
-            configuration.iceServers = turnServers;
-            console.log('system', 'Configuration updated with fresh TURN credentials');
-
-            // 3. Создаем PeerConnection (теперь с гарантированно актуальной конфой)
-            peerConnection = new RTCPeerConnection(configuration);
-        } catch (error) {
-            console.error("Ошибка при получении TURN кредов или старте звонка:", error);
-        }
-
-
         if (!ws || ws.readyState !== WebSocket.OPEN) {
             alert('First connect to signaling server!');
             return;
@@ -191,8 +175,13 @@
             // await getCoTURNCredentials();
 
             // Создаем PeerConnection
+            console.log('system', 'Fetching CoTURN credentials...');
+            const turnServers = await getCoTURNCredentialsAsync();
+            configuration.iceServers = turnServers;
+            console.log('system', 'Configuration updated with fresh TURN credentials');
+
+            // 3. Создаем PeerConnection (теперь с гарантированно актуальной конфой)
             peerConnection = new RTCPeerConnection(configuration);
-            console.log('system', 'PeerConnection created with TURN servers');
 
             // Создаем удаленный поток для remote video
             remoteStream = new MediaStream();
