@@ -216,21 +216,6 @@
         });
     }
 
-    // КОПИРОВАНИЕ UUID ПО КЛИКУ
-    const linkElement = document.getElementById('inviteLink');
-    linkElement.textContent = 'Ссылка приглашение ->  ' + `${window.location.origin}/callee.html?uuid=${uuid}`;
-
-    linkElement.addEventListener('click', () => {
-        navigator.clipboard.writeText(linkElement.textContent);
-        const originalText = linkElement.textContent;
-        linkElement.textContent = "Скопировано!";
-        linkElement.style.color = "#000";
-        setTimeout(() => {
-            linkElement.textContent = originalText;
-            linkElement.style.color = "";
-        }, 2000);
-    });
-
     window.onload = connect;
 </script>
 
