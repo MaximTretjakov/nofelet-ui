@@ -75,11 +75,10 @@
         ws.onmessage = async e => {
             const msg = JSON.parse(e.data);
 
-            if (msg.type === 'answer') {
-                log('answer received');
-                await pc.setRemoteDescription(msg);
-                for (const c of iceCandidatesQueue) await pc.addIceCandidate(c);
-                iceCandidatesQueue = [];
+            if (msg.type === 'offer') {
+                log('offer received');
+                pendingOffer = msg;
+                document.getElementById('acceptCallBtn').disabled = false;
             }
 
             if (msg.type === 'ice-candidate') {
@@ -91,6 +90,7 @@
             }
         };
     }
+
 
     // ПРИНИМАЕМ ВХОДЯЩИЙ ЗВОНОК
     async function acceptCall() {
