@@ -1,90 +1,53 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)https://getbootstrap.com/docs/5.0/examples/cover/ -->
-<html lang="en" class="h-100">
+<html lang="ru">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
-    <meta name="generator" content="Hugo 0.84.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nofelet</title>
-    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/cover/">
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- Favicons -->
-    <link rel="apple-touch-icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
-    <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
-    <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
-    <link rel="manifest" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/manifest.json">
-    <link rel="mask-icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/safari-pinned-tab.svg" color="#7952b3">
-    <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon.ico">
-    <meta name="theme-color" content="#7952b3">
-    <!-- Custom styles for this template -->
-    <link href="./cover.css" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
 </head>
-<body class="d-flex h-100 text-center text-white bg-dark">
-<div class="container text-center">
-    <div class="row row-cols-2">
-        <div class="col">
-            <p  id="status-caller" class="fw-medium connection-status">Caller offline</p>
-            <div class="card d-flex flex-column video-card " style="width: 40rem;">
-                <video id="localVideo" autoplay muted playsinline></video>
-            </div>
-        </div>
-        <div class="col">
-            <p  id="status-callee" class="fw-medium connection-status">Callee offline</p>
-            <div class="card d-flex flex-column video-card" style="width: 40rem;">
-                <div class="video-box">
-                    <video id="remoteVideo" autoplay muted playsinline></video>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row row-cols-2">
-        <div class="col btn-group mt-auto text-start p-3 w-25" role="group" aria-label="Default button group">
-            <button onclick="startCall()" type="button" class="btn btn-light" id="startCallBtn" disabled>Позвонить</button>
-            <button onclick="disconnect()" type="button" class="btn btn-light" id="hangUpBtn" disabled>Отбой</button>
-            <button onclick="videoOff()" type="button" class="btn btn-light" id="videoToggle">
-                <!-- SVG для состояния "Включено" (показывается первым) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" id="videoOn" class="bi bi-camera-video" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"/>
-                </svg>
-                <!-- SVG для состояния "Выключено" (изначально скрыт) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" id="videoOff" class="bi bi-camera-video-off hidden" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M10.961 12.365a2 2 0 0 0 .522-1.103l3.11 1.382A1 1 0 0 0 16 11.731V4.269a1 1 0 0 0-1.406-.913l-3.111 1.382A2 2 0 0 0 9.5 3H4.272l.714 1H9.5a1 1 0 0 1 1 1v6a1 1 0 0 1-.144.518zM1.428 4.18A1 1 0 0 0 1 5v6a1 1 0 0 0 1 1h5.014l.714 1H2a2 2 0 0 1-2-2V5c0-.675.334-1.272.847-1.634zM15 11.73l-3.5-1.555v-4.35L15 4.269zm-4.407 3.56-10-14 .814-.58 10 14z"/>
-                </svg>
-            </button>
-            <button onclick="soundOff()" type="button" class="btn btn-light" id="soundToggle">
-                <!-- SVG для состояния "Включено" (показывается первым) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" id="soundOn" class="bi bi-volume-down" viewBox="0 0 16 16">
-                    <path d="M9 4a.5.5 0 0 0-.812-.39L5.825 5.5H3.5A.5.5 0 0 0 3 6v4a.5.5 0 0 0 .5.5h2.325l2.363 1.89A.5.5 0 0 0 9 12zM6.312 6.39 8 5.04v5.92L6.312 9.61A.5.5 0 0 0 6 9.5H4v-3h2a.5.5 0 0 0 .312-.11M12.025 8a4.5 4.5 0 0 1-1.318 3.182L10 10.475A3.5 3.5 0 0 0 11.025 8 3.5 3.5 0 0 0 10 5.525l.707-.707A4.5 4.5 0 0 1 12.025 8"/>
-                </svg>
-                <!-- SVG для состояния "Выключено" (изначально скрыт) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" id="soundOff" class="bi bi-volume-mute hidden" viewBox="0 0 16 16">
-                    <path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06M6 5.04 4.312 6.39A.5.5 0 0 1 4 6.5H2v3h2a.5.5 0 0 1 .312.11L6 10.96zm7.854.606a.5.5 0 0 1 0 .708L12.207 8l1.647 1.646a.5.5 0 0 1-.708.708L11.5 8.707l-1.646 1.647a.5.5 0 0 1-.708-.708L10.793 8 9.146 6.354a.5.5 0 1 1 .708-.708L11.5 7.293l1.646-1.647a.5.5 0 0 1 .708 0"/>
-                </svg>
-            </button>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-sm"></div>
-        <div class="col-md-auto">
-             <p id="invite"></p>
-        </div>
-        <div class="col-sm"></div>
-    </div>
+<body>
+
+<!-- Ссылка-приглашение -->
+<div class="invite-container">
+    <span class="invite-label">Ссылка для входа:</span>
+    <code id="inviteLink" title="Нажмите, чтобы скопировать">Загрузка...</code>
 </div>
-<script src="./menu.js"></script>
+
+<main class="call-container">
+    <div class="video-grid">
+        <div class="video-wrapper">
+            <div class="badge">
+                <span class="user-icon">●</span>
+                <span class="status">Собеседник</span>
+            </div>
+            <video id="remoteVideo" autoplay playsinline></video>
+        </div>
+
+        <div class="video-wrapper">
+            <div class="badge">
+                <span class="user-icon">○</span>
+                <span class="status">Вы</span>
+                <span class="voice-indicator"></span>
+            </div>
+            <video id="localVideo" autoplay playsinline muted></video>
+        </div>
+    </div>
+
+    <!-- Круглые кнопки в стиле Google Meet -->
+    <nav class="controls">
+        <button onclick="startCall()" class="btn-round btn-start" id="startCallBtn" title="Начать">Start</button>
+        <button onclick="soundOff()" class="btn-round btn-toggle" id="soundToggle" title="Микрофон">Mic</button>
+        <button onclick="videoOff()" class="btn-round btn-toggle" id="videoToggle" title="Камера">Cam</button>
+        <button onclick="disconnect()" class="btn-round btn-end" id="hangUpBtn" title="Завершить">End</button>
+    </nav>
+</main>
 
 <!-- WebRTC логика-->
 <script>
+    // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
     let ws = null;
-    let peerConnection = null;
+    let pc = null;
     let localStream = null;
     let remoteStream = null;
     let iceCandidatesQueue = [];
@@ -92,288 +55,92 @@
 
     // КОНФИГУРАЦИЯ С TURN СЕРВЕРАМИ
     const configuration = {
-        iceCandidatePoolSize: 10,
-        iceTransportPolicy: 'all',
+        iceTransportPolicy: 'relay',
         bundlePolicy: 'max-bundle',
         rtcpMuxPolicy: 'require'
     };
 
+    function log(...a) { console.log('[CALLER]', ...a); }
+
+    // ГЕНЕРАЦИЯ ССЫЛКИ ПРИШЛАШЕНИЯ
+    function inviteUrl() {
+        document.getElementById('inviteLink').innerText = `${window.location.origin}/callee.html?uuid=${uuid}`;
+    }
+
+    // ЗАПРОС ВРЕМЕННЫХ КРЕДОВ ДЛЯ TURN
+    async function getTurn() {
+        return new Promise((resolve, reject) => {
+            const s = new WebSocket('wss://nofelet.duckdns.org:8443/turn-credentials/generate');
+            s.onmessage = e => {
+                resolve(JSON.parse(e.data).iceServers);
+                s.close();
+            };
+            s.onerror = reject;
+        });
+    }
+
+    // КОННЕКТ К СИГНАЛЬНОМУ СЕРВЕРУ
     async function connect() {
         inviteUrl();
 
-        try {
-            ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
+        ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
 
-            ws.onopen = () => {
-                document.getElementById('startCallBtn').disabled = true;
-                document.getElementById('videoOff').disabled = false;
-                document.getElementById('soundOff').disabled = false;
-                updateStatusCaller('Caller connected')
-            };
+        ws.onmessage = async e => {
+            const msg = JSON.parse(e.data);
 
-            ws.onmessage = async (event) => {
-                const message = JSON.parse(event.data);
-                if (message.type === 'answer') {
-                    console.log('system', 'Answer received from signaling, processing...');
-                    await handleAnswer(message);
-                } else if (message.type === 'ice-candidate') {
-                    console.log('ice', 'Received ICE candidate from callee');
-                    await handleIceCandidate(message.candidate);
-                } else if (message.type === 'offer') {
-                    console.log('system', 'Unexpected offer received - we are caller');
-                } else if (message.type === 'clientExist'){
-                    console.log('system', 'Callee connected');
-                    document.getElementById('startCallBtn').disabled = false;
-                    document.getElementById('hangUpBtn').disabled = false;
-                }
-            };
-
-            ws.onerror = (error) => {
-                console.log('Signaling error: ' + error);
-            };
-
-            ws.onclose = async (event) => {
-                console.log('Disconnected from signaling server');
-                console.log('Code:', event.code);
-                console.log('Reason:', event.reason);
-                console.log('Was clean?', event.wasClean);
-                document.getElementById('startCallBtn').disabled = true;
-            };
-        } catch (error) {
-            console.log('Signaling error: ' + error.message.toString());
-        }
-    }
-
-    async function startCall() {
-        if (!ws || ws.readyState !== WebSocket.OPEN) {
-            alert('First connect to signaling server!');
-            return;
-        }
-
-        try {
-            console.log('system', 'Starting call...');
-            iceCandidatesQueue = []; // Очищаем очередь кандидатов
-
-            // Получаем медиапоток
-            localStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    width: { ideal: 640 },
-                    height: { ideal: 480 },
-                    frameRate: { ideal: 30 }
-                },
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true
-                }
-            });
-
-            // Показываем локальное видео
-            document.getElementById('localVideo').srcObject = localStream;
-            console.log('system', 'Local media stream acquired');
-
-            // Идем за временными кредами CoTURN
-            // await getCoTURNCredentials();
-
-            // Создаем PeerConnection
-            console.log('system', 'Fetching CoTURN credentials...');
-            const turnServers = await getCoTURNCredentialsAsync();
-            configuration.iceServers = turnServers;
-            console.log('system', 'Configuration updated with fresh TURN credentials');
-
-            // 3. Создаем PeerConnection (теперь с гарантированно актуальной конфой)
-            peerConnection = new RTCPeerConnection(configuration);
-
-            // Создаем удаленный поток для remote video
-            remoteStream = new MediaStream();
-            document.getElementById('remoteVideo').srcObject = remoteStream;
-
-            // Добавляем локальные треки
-            localStream.getTracks().forEach(track => {
-                peerConnection.addTrack(track, localStream);
-                console.log('system', `Added local ${track.kind} track`);
-            });
-
-            // Обработчик удаленных треков
-            peerConnection.ontrack = (event) => {
-                console.log('system', `Remote track received: ${event.track.kind}`);
-
-                // Добавляем трек в удаленный поток
-                if (event.streams && event.streams[0]) {
-                    // Используем поток из события
-                    document.getElementById('remoteVideo').srcObject = event.streams[0];
-                    console.log('system', `Set remote ${event.track.kind} stream`);
-                } else {
-                    // Создаем новый поток
-                    remoteStream.addTrack(event.track);
-                    console.log('system', `Added ${event.track.kind} track to remote stream`);
-                }
-            };
-
-            // ICE кандидаты
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    const candidate = event.candidate;
-                    console.log('ice', `ICE candidate: ${candidate.type} ${candidate.protocol} ${candidate.address}:${candidate.port}`);
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'ice-candidate',
-                            candidate: event.candidate
-                        }));
-                    }
-                } else {
-                    console.log('ice', 'All ICE candidates generated');
-                }
-            };
-
-            // Состояние соединения
-            peerConnection.onconnectionstatechange = () => {
-                const state = peerConnection.connectionState;
-                console.log('connection', `Connection state: ${state}`);
-
-                if (state === 'connected') {
-                    console.log('Call connected! ✅', 'connected');
-                    document.getElementById('hangUpBtn').disabled = false;
-                    document.getElementById('startCallBtn').disabled = true;
-                    updateStatusCaller('Caller connected')
-                    ws.close(1000, "Signaling complete");
-                } else if (state === 'disconnected' || state === 'failed') {
-                    console.log(`Call ${state} ❌`, 'disconnected');
-                    document.getElementById('hangUpBtn').disabled = false;
-                    document.getElementById('startCallBtn').disabled = false;
-                    updateStatusCallee('Offline...')
-                    if (state === 'failed') {
-                        console.log('error', 'Connection failed...');
-                    }
-                } else if (state === 'connecting') {
-                    console.log('Connecting... 🔄', 'waiting');
-                }
-            };
-
-            // ICE состояние
-            peerConnection.oniceconnectionstatechange = () => {
-                const state = peerConnection.iceConnectionState;
-                console.log('ice', `ICE connection state: ${state}`);
-
-                if (state === 'checking') {
-                    console.log('system', 'ICE checking in progress...');
-                } else if (state === 'connected') {
-                    updateStatusCallee('Callee connected')
-                    updateStatusCaller('Caller connected')
-                    console.log('system', 'ICE connected successfully!');
-                } else if (state === 'failed') {
-                    console.log('error', 'ICE failed - check TURN servers');
-                } else if (state === 'disconnected') {
-                    console.log('warning', 'ICE disconnected - network issues?');
-                }
-            };
-
-            // Signaling состояние
-            peerConnection.onsignalingstatechange = () => {
-                const state = peerConnection.signalingState;
-                console.log('signaling', `Signaling state: ${state}`);
-
-                if (state === 'stable') {
-                    console.log('system', 'Signaling is stable');
-                } else if (state === 'have-local-offer') {
-                    console.log('system', 'Local offer set, waiting for answer');
-                } else if (state === 'have-remote-offer') {
-                    console.log('system', 'Remote offer received');
-                }
-            };
-
-            // Создаем и отправляем offer
-            const offer = await peerConnection.createOffer({
-                offerToReceiveAudio: true,
-                offerToReceiveVideo: true,
-                iceRestart: false
-            });
-
-            console.log('system', 'Offer created');
-
-            await peerConnection.setLocalDescription(offer);
-            console.log('system', 'Local description set');
-
-            peerConnection.onicegatheringstatechange = () => {
-                if (peerConnection.iceGatheringState === 'complete') {
-                    console.log('system', 'IceGatheringState - complete');
-                }
-            };
-
-            // Отправляем offer через signaling
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: 'offer',
-                    sdp: offer.sdp
-                }));
-                console.log('system', 'Offer sent to signaling server');
-            } else {
-                console.log('error', 'WebSocket not connected, cannot send offer');
-                return;
-            }
-
-            console.log('system', 'Waiting for answer from callee...');
-            console.log('Waiting for answer... ⏳', 'waiting');
-            document.getElementById('startCallBtn').disabled = true;
-        } catch (error) {
-            console.log('error', 'Failed to start call: ' + error.message.toString());
-            console.log('Call failed', 'disconnected');
-        }
-    }
-
-    async function handleAnswer(answer) {
-        if (!peerConnection) {
-            console.log('error', 'No PeerConnection when receiving answer');
-            return;
-        }
-
-        try {
-            console.log('system', 'Setting remote description (answer)...');
-            await peerConnection.setRemoteDescription(answer);
-            console.log('system', 'Remote description set successfully');
-
-            // Обрабатываем отложенные ICE кандидаты
-            if (iceCandidatesQueue.length > 0) {
-                console.log('system', `Processing ${iceCandidatesQueue.length} queued ICE candidates`);
-                for (const candidate of iceCandidatesQueue) {
-                    try {
-                        await peerConnection.addIceCandidate(candidate);
-                        console.log('ice', 'Added queued ICE candidate');
-                    } catch (err) {
-                        console.log('error', 'Error adding queued candidate: ' + err.message.toString());
-                    }
-                }
+            if (msg.type === 'answer') {
+                log('answer received');
+                await pc.setRemoteDescription(msg);
+                for (const c of iceCandidatesQueue) await pc.addIceCandidate(c);
                 iceCandidatesQueue = [];
             }
-        } catch (error) {
-            console.log('error', 'Error setting answer: ' + error.message.toString());
-        }
-    }
 
-    async function handleIceCandidate(candidate) {
-        if (!peerConnection) {
-            console.log('error', 'No PeerConnection for ICE candidate - queuing');
-            iceCandidatesQueue.push(candidate);
-            return;
-        }
-
-        try {
-            if (peerConnection.remoteDescription) {
-                await peerConnection.addIceCandidate(candidate);
-                console.log('ice', 'Added ICE candidate from callee');
-            } else {
-                // Сохраняем кандидаты до установки remoteDescription
-                iceCandidatesQueue.push(candidate);
-                console.log('ice', `Queued ICE candidate (${iceCandidatesQueue.length} pending)`);
+            if (msg.type === 'ice-candidate') {
+                if (pc?.remoteDescription) {
+                    await pc.addIceCandidate(msg.candidate);
+                } else {
+                    iceCandidatesQueue.push(msg.candidate);
+                }
             }
-        } catch (error) {
-            console.log('error', 'Error adding ICE candidate: ' + error.message.toString());
-        }
+        };
     }
 
+    // СТАРТ ЗВОНКА
+    async function startCall() {
+        document.getElementById('startCallBtn').disabled = true;
+
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideo').srcObject = localStream;
+
+        configuration.iceServers = await getTurn();
+        pc = new RTCPeerConnection(configuration);
+
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+        pc.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
+
+        pc.onicecandidate = e => {
+            if (e.candidate) {
+                ws.send(JSON.stringify({ type: 'ice-candidate', candidate: e.candidate }));
+            }
+        };
+
+        pc.onconnectionstatechange = () =>
+            log('connectionState:', pc.connectionState);
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
+    }
+
+    document.getElementById('startCallBtn').onclick = startCall;
+
+    // ЗАВЕРШЕНИЕ ЗВОНКА
     function disconnect() {
-        if (peerConnection) {
-            peerConnection.close();
-            peerConnection = null;
+        if (pc) {
+            pc.close();
+            pc = null;
         }
 
         if (localStream) {
@@ -386,14 +153,7 @@
             remoteStream = null;
         }
 
-        document.getElementById('localVideo').srcObject = null;
-        document.getElementById('remoteVideo').srcObject = null;
         iceCandidatesQueue = [];
-
-        console.log('Call ended', 'disconnected');
-        console.log('system', 'Call ended');
-        console.log('state', 'All connections closed');
-
         document.getElementById('startCallBtn').disabled = true;
         document.getElementById('hangUpBtn').disabled = true;
 
@@ -401,46 +161,35 @@
             ws.close(1000, "Normal Closure");
             ws = null;
         }
-        console.log('Disconnected', 'disconnected');
-        updateStatusCaller('Caller offline');
-        updateStatusCallee('Callee offline')
     }
 
-    function updateStatusCaller(message) {
-        const status = document.getElementById('status-caller');
-        status.textContent = message;
+    // ПЕРЕКЛЮЧАТЕЛЬ СОСТОЯНИЯ КНОПОК ВИДЕО/АУДИО
+    function toggleMedia(btn) {
+        btn.classList.toggle('off');
     }
 
-    function updateStatusCallee(message){
-        const status = document.getElementById('status-callee');
-        status.textContent = message;
-    }
-
+    // ОТКЛЮЧЕНИЕ/ВКЛЮЧЕНИЕ ВИДЕО ИНИЦИАТОРА
     function videoOff(){
+        const camBtn = document.getElementById('videoToggle');
+
+        toggleMedia(camBtn);
+
         const toggleButton = document.getElementById('videoToggle');
-        const videoOffSVG = document.getElementById('videoOff');
-        const videoOnSVG = document.getElementById('videoOn');
 
-        // Переключаем класс 'hidden' у обоих элементов
-        videoOffSVG.classList.toggle('hidden');
-        videoOnSVG.classList.toggle('hidden');
-
-        // Можно также обновить атрибут aria-label для доступности (опционально)
-        const isVideoOn = !videoOffSVG.classList.contains('hidden');
+        const isVideoOn = toggleButton.classList.contains('off');
         if (isVideoOn){
             toggleButton.setAttribute('aria-label', 'Выключить видео');
             localStream.getVideoTracks().forEach(track => {
                 track.enabled = false;
             });
-            console.log('Видео отключено локально и у пира.');
         }else {
             localStream.getVideoTracks().forEach(track => {
                 track.enabled = true;
             });
-            console.log('Видео отключено локально и у пира.');
         }
     }
 
+    // ОТКЛЮЧЕНИЕ/ВКЛЮЧЕНИЕ АУДИО ИНИЦИАТОРА
     function soundOff(){
         if (!localStream) return;
 
@@ -454,14 +203,11 @@
         // Переключаем все аудиодорожки
         toggleAudio(localStream, newState);
 
-        const soundOffSVG = document.getElementById('soundOff');
-        const soundOnSVG = document.getElementById('soundOn');
-
-        // Переключаем класс 'hidden' у обоих элементов
-        soundOffSVG.classList.toggle('hidden');
-        soundOnSVG.classList.toggle('hidden');
+        const micBtn = document.getElementById('soundToggle');
+        toggleMedia(micBtn);
     }
 
+    // ПЕРЕКЛЮЧАТЕЛЬ
     function toggleAudio(stream, enable) {
         if (!stream) return;
 
@@ -475,40 +221,20 @@
         });
     }
 
-    function inviteUrl() {
-        document.getElementById('invite').innerText = 'Ссылка приглашение ->  ' + `${window.location.origin}/callee.html?uuid=${uuid}`;
-    }
+    // КОПИРОВАНИЕ UUID ПО КЛИКУ
+    const linkElement = document.getElementById('inviteLink');
+    linkElement.textContent = 'Ссылка приглашение ->  ' + `${window.location.origin}/callee.html?uuid=${uuid}`;
 
-    // Перепишите функцию, чтобы она стала асинхронной и возвращала Promise
-    function getCoTURNCredentialsAsync() {
-        return new Promise((resolve, reject) => {
-            try {
-                const wsTurn = new WebSocket(`wss://nofelet.duckdns.org:8443/turn-credentials/generate`);
-
-                wsTurn.onopen = () => {
-                    console.log('Connected to TURN signaling server');
-                };
-
-                wsTurn.onmessage = (event) => {
-                    const creds = JSON.parse(event.data);
-                    // Как только данные получены, резолвим промис с новыми серверами
-                    resolve(creds.iceServers);
-                    wsTurn.close(); // Закрываем соединение после получения кредов
-                };
-
-                wsTurn.onerror = (error) => {
-                    console.error('Signaling error: ' + error);
-                    reject(error); // Отклоняем промис в случае ошибки
-                };
-
-                wsTurn.onclose = (event) => {
-                    console.log('Disconnected from TURN signaling server');
-                };
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
+    linkElement.addEventListener('click', () => {
+        navigator.clipboard.writeText(linkElement.textContent);
+        const originalText = linkElement.textContent;
+        linkElement.textContent = "Скопировано!";
+        linkElement.style.color = "#000";
+        setTimeout(() => {
+            linkElement.textContent = originalText;
+            linkElement.style.color = "";
+        }, 2000);
+    });
 
     window.onload = connect;
 </script>
