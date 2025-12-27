@@ -8,6 +8,12 @@
 </head>
 <body>
 
+<div id="startOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center;">
+    <button onclick="unlock()" style="padding:20px 40px; font-size:18px; border-radius:30px; cursor:pointer;">
+        Войти в комнату звонков
+    </button>
+</div>
+
 <main class="call-container">
     <div class="video-grid">
         <div class="video-wrapper">
@@ -39,6 +45,11 @@
 
 <!-- WebRTC логика-->
 <script>
+    // СОЗДАЕМ ОБЪЕКТ ЗВУКА
+    const ringtone = new Audio('./assets/ringtone.wav');
+    ringtone.loop = true;   // Зацикливаем
+    ringtone.volume = 0.5; // Громкость 50%
+
     // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
     let pc;
     let ws;
@@ -81,6 +92,7 @@
                 const btn = document.getElementById('acceptCallBtn');
                 btn.disabled = false;
                 btn.classList.add('ringing');
+                ringtone.play().catch(err => console.error("Звук заблокирован:", err));
             }
 
             if (msg.type === 'ice-candidate') {
@@ -96,41 +108,61 @@
 
     // ПРИНИМАЕМ ВХОДЯЩИЙ ЗВОНОК
     async function acceptCall() {
+        // УБИРАЕМ АНИМАЦИЮ С КНОПКИ START
         const btn = document.getElementById('acceptCallBtn');
         btn.classList.remove('ringing');
 
+        // ГЛУШИМ ЗВУК ВЫЗОВА
+        ringtone.pause();
+        ringtone.currentTime = 0; // Сброс в начало
+
+        // ЛОЧИМ КНОПКУ ЗВОНКА
         document.getElementById('acceptCallBtn').disabled = true;
 
+        // ЗАПРОС МЕДИА
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         document.getElementById('localVideo').srcObject = localStream;
 
+        // ЗАПРОС ВРЕМЕННЫХ КРЕДОВ В TURN
         configuration.iceServers = await getTurn();
+
+        // СОЗДАЕМ СОЕДИНЕНИЕ
         pc = new RTCPeerConnection(configuration);
 
+        // ДОБАВЛЯЕМ ЛОКАЛЬНОЕ ВИДЕО
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
 
+        // ДОБАВЛЯЕМ УДАЛЕННОЕ ВИДЕО
         pc.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
 
+        // ОТСЫЛАЕМ КАНАДИДАТЫ
         pc.onicecandidate = e => {
             if (e.candidate) {
                 ws.send(JSON.stringify({ type: 'ice-candidate', candidate: e.candidate }));
             }
         };
 
+        // ЛОГИРУЕМ СОСТОЯНИЕ СОЕДИНЕНИЯ
         pc.onconnectionstatechange = () =>
             log('connectionState:', pc.connectionState);
 
+        // ПРИЕМ ОФЕРА ОТ ИНИЦИАТОРА
         await pc.setRemoteDescription({
             type: 'offer',
             sdp: pendingOffer.sdp
         });
 
+        // ОБРАБОТКА КАНДИДАТОВ И ЧИСТКА ОЧЕРЕДИ КАНДИДАТОВ
         for (const c of iceCandidatesQueue) await pc.addIceCandidate(c);
         iceCandidatesQueue = [];
 
+        // СОЗДАНИЕ АНСВЕРА
         const answer = await pc.createAnswer();
+
+        // ОБНОВЛЯЕМ ЛОКАЛЬНЫЙ ДЕСКРИПШЕН АНСВЕРОМ
         await pc.setLocalDescription(answer);
 
+        // ОТСЫЛАЕМ АНСВЕР ИНИЦИАТОРУ ЧЕРЕЗ СИГНАЛЬНЫЙ СЕРВЕР
         ws.send(JSON.stringify({ type: 'answer', sdp: answer.sdp }));
     }
 
@@ -138,6 +170,12 @@
 
     // ЗАВЕРШЕНИЕ ЗВОНКА
     function disconnect() {
+        // Останавливаем мелодию, если она играет
+        if (ringtone) {
+            ringtone.pause();
+            ringtone.currentTime = 0;
+        }
+
         if (pc) {
             pc.close();
             pc = null;
@@ -219,6 +257,20 @@
             track.enabled = enable;
             console.log(`Аудиодорожка "${track.label}" теперь ${enable ? 'включена' : 'отключена'}.`);
         });
+    }
+
+    // УБИРАЕМ ОВЕРЛЕЙ
+    function unlock() {
+        // Убираем оверлей
+        document.getElementById('startOverlay').style.display = 'none';
+
+        // "Прогреваем" звук (важно вызвать .play() именно внутри этой функции-обработчика клика)
+        ringtone.play().then(() => {
+            ringtone.pause();
+            ringtone.currentTime = 0;
+        });
+
+        console.log("Аудио разблокировано");
     }
 
     window.onload = connect;
