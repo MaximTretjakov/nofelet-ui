@@ -78,7 +78,9 @@
             if (msg.type === 'offer') {
                 log('offer received');
                 pendingOffer = msg;
-                document.getElementById('acceptCallBtn').disabled = false;
+                const btn = document.getElementById('acceptCallBtn');
+                btn.disabled = false;
+                btn.classList.add('ringing');
             }
 
             if (msg.type === 'ice-candidate') {
@@ -94,6 +96,9 @@
 
     // ПРИНИМАЕМ ВХОДЯЩИЙ ЗВОНОК
     async function acceptCall() {
+        const btn = document.getElementById('acceptCallBtn');
+        btn.classList.remove('ringing');
+
         document.getElementById('acceptCallBtn').disabled = true;
 
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });

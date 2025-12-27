@@ -173,6 +173,61 @@ video {
     text-decoration: none !important;
 }
 
+/* Состояние звонка */
+.btn-start.ringing {
+    background-color: #2ecc71 !important;
+    color: white !important;
+    animation: ring-vibration 0.1s infinite alternate !important;
+    position: relative;
+    z-index: 5; /* Поднимаем кнопку над другими элементами */
+    overflow: visible !important; /* ВАЖНО: разрешаем волнам выходить наружу */
+    border: none;
+}
+
+/* Создаем общий стиль для волн через псевдоэлементы */
+.btn-start.ringing::before,
+.btn-start.ringing::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    background-color: #2ecc71;
+    z-index: -1; /* Уходим под кнопку */
+    pointer-events: none; /* Чтобы круги не мешали кликать */
+}
+
+/* Первая волна */
+.btn-start.ringing::before {
+    animation: water-ripple 2s infinite;
+}
+
+/* Вторая волна (с задержкой) */
+.btn-start.ringing::after {
+    animation: water-ripple 2s infinite;
+    animation-delay: 0.6s;
+}
+
+/* Анимация самой кнопки (дрожание) */
+@keyframes ring-vibration {
+    from { transform: scale(1.1) rotate(-2deg); }
+    to { transform: scale(1.1) rotate(2deg); }
+}
+
+/* Анимация расходящихся волн (круги на воде) */
+@keyframes water-ripple {
+    0% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(3.5); /* Размер круга (насколько далеко уходит волна) */
+        opacity: 0;
+    }
+}
+
 @media (max-width: 768px) {
     .video-grid { grid-template-columns: 1fr; }
 }
