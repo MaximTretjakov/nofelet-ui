@@ -20,6 +20,7 @@
             <div class="badge">
                 <span class="user-icon">●</span>
                 <span class="status">Собеседник</span>
+                <span id="callerStatus" class=""></span>
             </div>
             <video id="remoteVideo" autoplay playsinline></video>
         </div>
@@ -28,7 +29,7 @@
             <div class="badge">
                 <span class="user-icon">○</span>
                 <span class="status">Вы</span>
-                <span class="voice-indicator"></span>
+                <span id="calleeStatus" class=""></span>
             </div>
             <video id="localVideo" autoplay playsinline muted></video>
         </div>
@@ -53,7 +54,8 @@
     // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
     let pc;
     let ws;
-    let localStream;
+    let localStream = null;
+    let remoteStream = null;
     let pendingOffer;
     let iceCandidatesQueue = [];
     let uuid = new URLSearchParams(window.location.search).get('uuid');
@@ -89,10 +91,18 @@
             if (msg.type === 'offer') {
                 log('offer received');
                 pendingOffer = msg;
+
+                // ДОБАВЛЯЕМ АНИМАЦИЮ КНОПКЕ ЗВОНКА
                 const btn = document.getElementById('acceptCallBtn');
                 btn.disabled = false;
                 btn.classList.add('ringing');
+
+                // ВКЛЮЧАЕМ МЕЛОДИЮ ЗВОНКА
                 ringtone.play().catch(err => console.error("Звук заблокирован:", err));
+
+                // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН ИНИЦИАТОРА
+                const caller = document.getElementById('callerStatus');
+                caller.classList.add('voice-indicator');
             }
 
             if (msg.type === 'ice-candidate') {
@@ -111,6 +121,10 @@
         // УБИРАЕМ АНИМАЦИЮ С КНОПКИ START
         const btn = document.getElementById('acceptCallBtn');
         btn.classList.remove('ringing');
+
+        // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН
+        const status = document.getElementById('calleeStatus');
+        status.classList.add('voice-indicator');
 
         // ГЛУШИМ ЗВУК ВЫЗОВА
         ringtone.pause();
@@ -143,8 +157,20 @@
         };
 
         // ЛОГИРУЕМ СОСТОЯНИЕ СОЕДИНЕНИЯ
-        pc.onconnectionstatechange = () =>
+        pc.onconnectionstatechange = () => {
             log('connectionState:', pc.connectionState);
+            const state = pc.connectionState;
+            if (state === 'connected') {
+                log('connectionState:', 'connected');
+            } else if (state === 'disconnected' || state === 'failed') {
+                log('connectionState:', 'failed or disconnected');
+                // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН ИНИЦИАТОРА
+                const caller = document.getElementById('callerStatus');
+                caller.classList.remove('voice-indicator');
+            } else if (state === 'connecting') {
+                log('connectionState:', 'connecting...');
+            }
+        };
 
         // ПРИЕМ ОФЕРА ОТ ИНИЦИАТОРА
         await pc.setRemoteDescription({
@@ -170,31 +196,43 @@
 
     // ЗАВЕРШЕНИЕ ЗВОНКА
     function disconnect() {
-        // Останавливаем мелодию, если она играет
+        // ОСТАНАВЛИВАЕМ МЕЛОДИЮ ЕСЛИ ОНА ИГРАЕТ
         if (ringtone) {
             ringtone.pause();
             ringtone.currentTime = 0;
         }
 
+        // ЗАКРЫВАЕМ WEBRTC СОЕДИНЕНИЕ
         if (pc) {
             pc.close();
             pc = null;
         }
 
+        // ВЫКЛЮЧАЕМ ЛОКАЛЬНОЕ ВИДЕО
         if (localStream) {
             localStream.getTracks().forEach(track => track.stop());
             localStream = null;
         }
 
+        // ВЫКЛЮЧАЕМ УДАЛЕННОЕ ВИДЕО
         if (remoteStream) {
             remoteStream.getTracks().forEach(track => track.stop());
             remoteStream = null;
         }
 
+        // ОПУСТОШАЕМ ОЧЕРЕДЬ КАНДИДАТОВ
         iceCandidatesQueue = [];
-        document.getElementById('startCallBtn').disabled = true;
+        document.getElementById('acceptCallBtn').disabled = true;
         document.getElementById('hangUpBtn').disabled = true;
 
+        // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН У СОБЕСЕДНИКА
+        const callee = document.getElementById('calleeStatus');
+        callee.classList.remove('voice-indicator');
+        // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН ИНИЦИАТОРА
+        const caller = document.getElementById('callerStatus');
+        caller.classList.remove('voice-indicator');
+
+        // ЗАКРЫВАЕМ СОКЕТ ШТАТНО
         if (ws) {
             ws.close(1000, "Normal Closure");
             ws = null;
