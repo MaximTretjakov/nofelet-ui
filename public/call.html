@@ -20,6 +20,7 @@
             <div class="badge">
                 <span class="user-icon">●</span>
                 <span class="status">Собеседник</span>
+                <span id="calleeStatus" class=""></span>
             </div>
             <video id="remoteVideo" autoplay playsinline></video>
         </div>
@@ -28,7 +29,7 @@
             <div class="badge">
                 <span class="user-icon">○</span>
                 <span class="status">Вы</span>
-                <span class="voice-indicator"></span>
+                <span id="callerStatus" class=""></span>
             </div>
             <video id="localVideo" autoplay playsinline muted></video>
         </div>
@@ -93,6 +94,9 @@
                 await pc.setRemoteDescription(msg);
                 for (const c of iceCandidatesQueue) await pc.addIceCandidate(c);
                 iceCandidatesQueue = [];
+                // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН
+                const status = document.getElementById('calleeStatus');
+                status.classList.add('voice-indicator');
             }
 
             if (msg.type === 'ice-candidate') {
@@ -107,30 +111,59 @@
 
     // СТАРТ ЗВОНКА
     async function startCall() {
+        // ЛОЧИМ КНОПКУ СТАРТА ЗВОНКА
         document.getElementById('startCallBtn').disabled = true;
 
+        // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН
+        const status = document.getElementById('callerStatus');
+        status.classList.add('voice-indicator');
+
+        // ЗАПРОС МЕДИА
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         document.getElementById('localVideo').srcObject = localStream;
 
+        // ЗАПРОС ВРЕМЕННЫХ КРЕДОВ В TURN
         configuration.iceServers = await getTurn();
+
+        // СОЗДАЕМ СОЕДИНЕНИЕ
         pc = new RTCPeerConnection(configuration);
 
+        // ДОБАВЛЯЕМ ЛОКАЛЬНОЕ ВИДЕО
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
 
+        // ДОБАВЛЯЕМ УДАЛЕННОЕ ВИДЕО
         pc.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
 
+        // ОТСЫЛАЕМ КАНАДИДАТЫ
         pc.onicecandidate = e => {
             if (e.candidate) {
                 ws.send(JSON.stringify({ type: 'ice-candidate', candidate: e.candidate }));
             }
         };
 
-        pc.onconnectionstatechange = () =>
+        // ЛОГИРУЕМ СОСТОЯНИЕ СОЕДИНЕНИЯ
+        pc.onconnectionstatechange = () => {
             log('connectionState:', pc.connectionState);
+            const state = pc.connectionState;
+            if (state === 'connected') {
+                log('connectionState:', 'connected');
+            } else if (state === 'disconnected' || state === 'failed') {
+                log('connectionState:', 'failed or disconnected');
+                // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН У СОБЕСЕДНИКА
+                const callee = document.getElementById('calleeStatus');
+                callee.classList.remove('voice-indicator');
+            } else if (state === 'connecting') {
+                log('connectionState:', 'connecting...');
+            }
+        };
 
+        // СОЗДАЕМ ОФЕР
         const offer = await pc.createOffer();
+
+        // ОБНОВЛЯЕМ ЛОКАЛЬНЫЙ ДЕСКРИПШЕН ОФЕРОМ
         await pc.setLocalDescription(offer);
 
+        // ОТСЫЛАЕМ ОФЕР ИНИЦИАТОРУ ЧЕРЕЗ СИГНАЛЬНЫЙ СЕРВЕР
         ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
     }
 
@@ -138,25 +171,37 @@
 
     // ЗАВЕРШЕНИЕ ЗВОНКА
     function disconnect() {
+        // ЗАКРЫВАЕМ WEBRTC СОЕДИНЕНИЕ
         if (pc) {
             pc.close();
             pc = null;
         }
 
+        // ВЫКЛЮЧАЕМ ЛОКАЛЬНОЕ ВИДЕО
         if (localStream) {
             localStream.getTracks().forEach(track => track.stop());
             localStream = null;
         }
 
+        // ВЫКЛЮЧАЕМ УДАЛЕННОЕ ВИДЕО
         if (remoteStream) {
             remoteStream.getTracks().forEach(track => track.stop());
             remoteStream = null;
         }
 
+        // ОПУСТОШАЕМ ОЧЕРЕДЬ КАНДИДАТОВ
         iceCandidatesQueue = [];
         document.getElementById('startCallBtn').disabled = true;
         document.getElementById('hangUpBtn').disabled = true;
 
+        // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН У СОБЕСЕДНИКА
+        const callee = document.getElementById('calleeStatus');
+        callee.classList.remove('voice-indicator');
+        // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН ИНИЦИАТОРА
+        const caller = document.getElementById('callerStatus');
+        caller.classList.remove('voice-indicator');
+
+        // ЗАКРЫВАЕМ СОКЕТ ШТАТНО
         if (ws) {
             ws.close(1000, "Normal Closure");
             ws = null;
