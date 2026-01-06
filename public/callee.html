@@ -113,6 +113,8 @@
                 }
             }
         };
+
+        ws.onerror = async e => { log('ws error: ', e); };
     }
 
 
