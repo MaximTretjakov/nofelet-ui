@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nofelet</title>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="startOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center;">
-    <button onclick="unlock()" style="padding:20px 40px; font-size:18px; border-radius:30px; cursor:pointer;">
-        Войти в комнату звонков
-    </button>
+<!-- Ссылка-приглашение -->
+<div class="invite-container">
+    <span class="invite-label">Ссылка для входа:</span>
+    <code id="inviteLink" title="Нажмите, чтобы скопировать">Загрузка...</code>
 </div>
 
 <main class="call-container">
@@ -20,7 +20,7 @@
             <div class="badge">
                 <span class="user-icon">●</span>
                 <span class="status">Собеседник</span>
-                <span id="callerStatus" class=""></span>
+                <span id="calleeStatus" class=""></span>
             </div>
             <video id="remoteVideo" autoplay playsinline></video>
         </div>
@@ -29,7 +29,7 @@
             <div class="badge">
                 <span class="user-icon">○</span>
                 <span class="status">Вы</span>
-                <span id="calleeStatus" class=""></span>
+                <span id="callerStatus" class=""></span>
             </div>
             <video id="localVideo" autoplay playsinline muted></video>
         </div>
@@ -37,7 +37,7 @@
 
     <!-- Круглые кнопки в стиле Google Meet -->
     <nav class="controls">
-        <button onclick="acceptCall()" class="btn-round btn-start" id="acceptCallBtn" title="Начать">Start</button>
+        <button onclick="startCall()" class="btn-round btn-start" id="startCallBtn" title="Начать">Start</button>
         <button onclick="soundOff()" class="btn-round btn-toggle" id="soundToggle" title="Микрофон">Mic</button>
         <button onclick="videoOff()" class="btn-round btn-toggle" id="videoToggle" title="Камера">Cam</button>
         <button onclick="disconnect()" class="btn-round btn-end" id="hangUpBtn" title="Завершить">End</button>
@@ -46,19 +46,13 @@
 
 <!-- WebRTC логика-->
 <script>
-    // СОЗДАЕМ ОБЪЕКТ ЗВУКА
-    const ringtone = new Audio('./assets/call.mp3');
-    ringtone.loop = true;   // Зацикливаем
-    ringtone.volume = 0.5; // Громкость 50%
-
     // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-    let pc;
-    let ws;
+    let ws = null;
+    let pc = null;
     let localStream = null;
     let remoteStream = null;
-    let pendingOffer;
     let iceCandidatesQueue = [];
-    let uuid = new URLSearchParams(window.location.search).get('uuid');
+    let uuid = crypto.randomUUID();
 
     // КОНФИГУРАЦИЯ С TURN СЕРВЕРАМИ
     const configuration = {
@@ -68,6 +62,11 @@
     };
 
     function log(...a) { console.log('[CALLER]', ...a); }
+
+    // ГЕНЕРАЦИЯ ССЫЛКИ ПРИШЛАШЕНИЯ
+    function inviteUrl() {
+        document.getElementById('inviteLink').innerText = `${window.location.origin}/callee.html?uuid=${uuid}`;
+    }
 
     // ЗАПРОС ВРЕМЕННЫХ КРЕДОВ ДЛЯ TURN
     async function getTurn() {
@@ -83,26 +82,21 @@
 
     // КОННЕКТ К СИГНАЛЬНОМУ СЕРВЕРУ
     async function connect() {
+        inviteUrl();
+
         ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
 
         ws.onmessage = async e => {
             const msg = JSON.parse(e.data);
 
-            if (msg.type === 'offer') {
-                log('offer received');
-                pendingOffer = msg;
-
-                // ДОБАВЛЯЕМ АНИМАЦИЮ КНОПКЕ ЗВОНКА
-                const btn = document.getElementById('acceptCallBtn');
-                btn.disabled = false;
-                btn.classList.add('ringing');
-
-                // ВКЛЮЧАЕМ МЕЛОДИЮ ЗВОНКА
-                ringtone.play().catch(err => console.error("Звук заблокирован:", err));
-
-                // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН ИНИЦИАТОРА
-                const caller = document.getElementById('callerStatus');
-                caller.classList.add('voice-indicator');
+            if (msg.type === 'answer') {
+                log('answer received');
+                await pc.setRemoteDescription(msg);
+                for (const c of iceCandidatesQueue) await pc.addIceCandidate(c);
+                iceCandidatesQueue = [];
+                // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН
+                const status = document.getElementById('calleeStatus');
+                status.classList.add('voice-indicator');
             }
 
             if (msg.type === 'ice-candidate') {
@@ -117,23 +111,14 @@
         ws.onerror = async e => { log('ws error: ', e); };
     }
 
-
-    // ПРИНИМАЕМ ВХОДЯЩИЙ ЗВОНОК
-    async function acceptCall() {
-        // УБИРАЕМ АНИМАЦИЮ С КНОПКИ START
-        const btn = document.getElementById('acceptCallBtn');
-        btn.classList.remove('ringing');
+    // СТАРТ ЗВОНКА
+    async function startCall() {
+        // ЛОЧИМ КНОПКУ СТАРТА ЗВОНКА
+        document.getElementById('startCallBtn').disabled = true;
 
         // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН
-        const status = document.getElementById('calleeStatus');
+        const status = document.getElementById('callerStatus');
         status.classList.add('voice-indicator');
-
-        // ГЛУШИМ ЗВУК ВЫЗОВА
-        ringtone.pause();
-        ringtone.currentTime = 0; // Сброс в начало
-
-        // ЛОЧИМ КНОПКУ ЗВОНКА
-        document.getElementById('acceptCallBtn').disabled = true;
 
         // ЗАПРОС МЕДИА
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -166,44 +151,28 @@
                 log('connectionState:', 'connected');
             } else if (state === 'disconnected' || state === 'failed') {
                 log('connectionState:', 'failed or disconnected');
-                // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН ИНИЦИАТОРА
-                const caller = document.getElementById('callerStatus');
-                caller.classList.remove('voice-indicator');
+                // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН У СОБЕСЕДНИКА
+                const callee = document.getElementById('calleeStatus');
+                callee.classList.remove('voice-indicator');
             } else if (state === 'connecting') {
                 log('connectionState:', 'connecting...');
             }
         };
 
-        // ПРИЕМ ОФЕРА ОТ ИНИЦИАТОРА
-        await pc.setRemoteDescription({
-            type: 'offer',
-            sdp: pendingOffer.sdp
-        });
+        // СОЗДАЕМ ОФЕР
+        const offer = await pc.createOffer();
 
-        // ОБРАБОТКА КАНДИДАТОВ И ЧИСТКА ОЧЕРЕДИ КАНДИДАТОВ
-        for (const c of iceCandidatesQueue) await pc.addIceCandidate(c);
-        iceCandidatesQueue = [];
+        // ОБНОВЛЯЕМ ЛОКАЛЬНЫЙ ДЕСКРИПШЕН ОФЕРОМ
+        await pc.setLocalDescription(offer);
 
-        // СОЗДАНИЕ АНСВЕРА
-        const answer = await pc.createAnswer();
-
-        // ОБНОВЛЯЕМ ЛОКАЛЬНЫЙ ДЕСКРИПШЕН АНСВЕРОМ
-        await pc.setLocalDescription(answer);
-
-        // ОТСЫЛАЕМ АНСВЕР ИНИЦИАТОРУ ЧЕРЕЗ СИГНАЛЬНЫЙ СЕРВЕР
-        ws.send(JSON.stringify({ type: 'answer', sdp: answer.sdp }));
+        // ОТСЫЛАЕМ ОФЕР ИНИЦИАТОРУ ЧЕРЕЗ СИГНАЛЬНЫЙ СЕРВЕР
+        ws.send(JSON.stringify({ type: 'offer', sdp: offer.sdp }));
     }
 
-    document.getElementById('acceptCallBtn').onclick = acceptCall;
+    document.getElementById('startCallBtn').onclick = startCall;
 
     // ЗАВЕРШЕНИЕ ЗВОНКА
     function disconnect() {
-        // ОСТАНАВЛИВАЕМ МЕЛОДИЮ ЕСЛИ ОНА ИГРАЕТ
-        if (ringtone) {
-            ringtone.pause();
-            ringtone.currentTime = 0;
-        }
-
         // ЗАКРЫВАЕМ WEBRTC СОЕДИНЕНИЕ
         if (pc) {
             pc.close();
@@ -224,7 +193,7 @@
 
         // ОПУСТОШАЕМ ОЧЕРЕДЬ КАНДИДАТОВ
         iceCandidatesQueue = [];
-        document.getElementById('acceptCallBtn').disabled = true;
+        document.getElementById('startCallBtn').disabled = true;
         document.getElementById('hangUpBtn').disabled = true;
 
         // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН У СОБЕСЕДНИКА
@@ -299,19 +268,20 @@
         });
     }
 
-    // УБИРАЕМ ОВЕРЛЕЙ
-    function unlock() {
-        // Убираем оверлей
-        document.getElementById('startOverlay').style.display = 'none';
+    // КОПИРОВАНИЕ UUID ПО КЛИКУ
+    const linkElement = document.getElementById('inviteLink');
+    linkElement.textContent = 'Ссылка приглашение ->  ' + `${window.location.origin}/callee.html?uuid=${uuid}`;
 
-        // "Прогреваем" звук (важно вызвать .play() именно внутри этой функции-обработчика клика)
-        ringtone.play().then(() => {
-            ringtone.pause();
-            ringtone.currentTime = 0;
-        });
-
-        console.log("Аудио разблокировано");
-    }
+    linkElement.addEventListener('click', () => {
+        navigator.clipboard.writeText(linkElement.textContent);
+        const originalText = linkElement.textContent;
+        linkElement.textContent = "Скопировано!";
+        linkElement.style.color = "#000";
+        setTimeout(() => {
+            linkElement.textContent = originalText;
+            linkElement.style.color = "";
+        }, 2000);
+    });
 
     window.onload = connect;
 </script>
