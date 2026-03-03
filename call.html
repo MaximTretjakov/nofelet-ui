@@ -154,6 +154,7 @@
                 // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН У СОБЕСЕДНИКА
                 const callee = document.getElementById('calleeStatus');
                 callee.classList.remove('voice-indicator');
+                resetVideoContainer('remoteVideo');
             } else if (state === 'connecting') {
                 log('connectionState:', 'connecting...');
             }
@@ -183,6 +184,7 @@
         if (localStream) {
             localStream.getTracks().forEach(track => track.stop());
             localStream = null;
+            resetVideoContainer('localVideo');
         }
 
         // ВЫКЛЮЧАЕМ УДАЛЕННОЕ ВИДЕО
@@ -208,6 +210,17 @@
             ws.close(1000, "Normal Closure");
             ws = null;
         }
+
+        resetVideoContainer('remoteVideo');
+    }
+
+    // ВОЗВРАЩАЕТ КОНТЕЙНЕРУ НАЧАЛЬНЫЙ СЕРЫЙ ФОН
+    function resetVideoContainer(elemId){
+        const localVideo = document.getElementById(elemId);
+        localVideo.pause();
+        localVideo.srcObject = null;
+        localVideo.removeAttribute("src");
+        localVideo.load();
     }
 
     // ПЕРЕКЛЮЧАТЕЛЬ СОСТОЯНИЯ КНОПОК ВИДЕО/АУДИО
