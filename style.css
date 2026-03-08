@@ -184,21 +184,6 @@ video {
     border: none;
 }
 
-/* Создаем общий стиль для волн через псевдоэлементы */
-.btn-start.ringing::before,
-.btn-start.ringing::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 50%;
-    background-color: #2ecc71;
-    z-index: -1; /* Уходим под кнопку */
-    pointer-events: none; /* Чтобы круги не мешали кликать */
-}
-
 /* Первая волна */
 .btn-start.ringing::before {
     animation: water-ripple 2s infinite;
@@ -268,4 +253,90 @@ video {
         transform: scale(3); /* Волна увеличивается в 3 раза */
         opacity: 0;         /* И плавно исчезает */
     }
+}
+
+/* Общие правки для иконок */
+.btn-round svg {
+    display: block;
+    flex-shrink: 0;
+}
+
+/* Кнопка вызова (Зеленая) */
+.btn-call {
+    background-color: #34a853 !important; /* Зеленый Google */
+    color: white !important;
+}
+
+.btn-call:hover {
+    background-color: #2d8e47 !important;
+    transform: scale(1.1);
+}
+
+/* Кнопка отбоя (Красная) */
+.btn-hangup {
+    background-color: #ea4335 !important; /* Красный Google */
+    color: white !important;
+}
+
+.btn-hangup:hover {
+    background-color: #d93025 !important;
+    transform: scale(1.1);
+}
+
+/* Удаляем анимацию вибрации, если класс ringing случайно останется */
+.btn-start.ringing {
+    animation: none !important;
+}
+
+/* Скрытое состояние */
+.controls-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+/* Видимое состояние */
+.controls-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Исправляем анимацию вибрации для иконки внутри кнопки */
+.btn-start.ringing svg {
+    animation: ring-vibration 0.1s infinite alternate !important;
+}
+
+/* Убеждаемся, что волны видны */
+.btn-start.ringing {
+    position: relative;
+    overflow: visible !important; /* Чтобы волны выходили за пределы круга */
+    z-index: 10;
+}
+
+/* Сами волны */
+.btn-start.ringing::before,
+.btn-start.ringing::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 50%;
+    background-color: #2ecc71;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.btn-start.ringing::before { animation: water-ripple 2s infinite; }
+.btn-start.ringing::after { animation: water-ripple 2s infinite 0.6s; }
+
+/* Анимации */
+@keyframes ring-vibration {
+    from { transform: rotate(-10deg); }
+    to { transform: rotate(10deg); }
+}
+
+@keyframes water-ripple {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(3.5); opacity: 0; }
 }
