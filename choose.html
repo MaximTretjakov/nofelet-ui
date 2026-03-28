@@ -1,70 +1,49 @@
 <!DOCTYPE html>
-<!-- saved from url=(0049)https://getbootstrap.com/docs/5.0/examples/cover/ -->
-<html lang="en" class="h-100">
+<html lang="ru" class="h-100">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
-    <meta name="generator" content="Hugo 0.84.0">
-    <title>Nofelet</title>
-    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/cover/">
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <!-- Favicons -->
-    <link rel="apple-touch-icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
-    <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
-    <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
-    <link rel="manifest" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/manifest.json">
-    <link rel="mask-icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/safari-pinned-tab.svg" color="#7952b3">
-    <link rel="icon" href="https://getbootstrap.com/docs/5.0/assets/img/favicons/favicon.ico">
-    <meta name="theme-color" content="#7952b3">
-    <!-- Custom styles for this template -->
-    <link href="https://maximtretjakov.github.io/nofelet-ui/cover.css" rel="stylesheet">
+    <title>Nofelet - Главная</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <link href="cover.css" rel="stylesheet">
 </head>
-<body class="d-flex h-100 text-center text-white bg-dark">
+
+<body class="d-flex h-100 text-center">
+
 <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
     <header class="mb-auto">
         <div>
             <nav class="nav nav-masthead justify-content-center float-md-end">
-                <a class="nav-link" href="https://maximtretjakov.github.io/nofelet-ui/index.html">Главная</a>
-                <a class="nav-link" href="https://maximtretjakov.github.io/nofelet-ui/choose.html">Звонки</a>
-                <a class="nav-link" href="https://maximtretjakov.github.io/nofelet-ui/contacts.html">Контакты</a>
+                <a class="nav-link active" aria-current="page" href="index.html">Главная</a>
+                <a class="nav-link" href="choose.html">Звонки</a>
+                <a class="nav-link" href="contacts.html">Контакты</a>
             </nav>
         </div>
     </header>
+
     <div class="text-center my-auto main-content-shift">
         <div class="row gx-5">
-            <div class="col">
-                <h3>P2P-звонок.</h3><br>
-                <p class="text-start">Вы используете P2P-звонок.<br>
-                    Ваше видео и голос передаются напрямую вашему собеседнику.<br>
-                    Мы не храним и не перехватываем ваш трафик на своих серверах.<br>
-                    Это гарантирует высокий уровень конфиденциальности и безопасности вашего разговора.
-                </p>
-                <a href="call.html" class="btn btn-primary" role="button">
-                    Начать звонок
-                </a>
+            <div class="col-md-6 mb-4">
+                <div class="choice-card">
+                    <h3>P2P-звонок</h3>
+                    <p>Вы используете P2P-звонок. Ваше видео и голос передаются напрямую собеседнику. Мы не храним ваш трафик.</p>
+                    <a href="call.html" class="btn btn-choose">Начать звонок</a>
+                </div>
             </div>
-            <div class="col">
-                <h3>Групповой звонок.</h3><br>
-                <p class="text-start">Общение всей командой.<br>
-                    Вы начинаете конференц-колл.<br>
-                    Эта функция позволяет подключить к разговору сразу несколько участников.<br>
-                    Идеально подходит для совещаний, обсуждений проектов или семейных бесед.<br>
-                    Мы обеспечиваем стабильное соединение для комфортного общения каждого участника.
-                </p>
-                <a href="call.html" class="btn btn-primary" role="button">
-                    Начать звонок
-                </a>
+
+            <div class="col-md-6 mb-4">
+                <div class="choice-card">
+                    <h3>Групповой звонок</h3>
+                    <p>Общение всей командой. Идеально подходит для совещаний, обсуждений проектов или семейных бесед.</p>
+                    <a href="group-call.html" class="btn btn-choose">Начать звонок</a>
+                </div>
             </div>
         </div>
     </div>
+
 </div>
 <script src="https://maximtretjakov.github.io/nofelet-ui/menu.js"></script>
 </body>
