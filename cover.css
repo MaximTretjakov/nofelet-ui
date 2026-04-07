@@ -328,3 +328,41 @@ body {
     padding: 4rem 5rem !important;
   }
 }
+
+/* Выносим хедер за пределы контейнера к правому краю экрана */
+header.mb-auto {
+  position: fixed !important;
+  top: 2rem !important;
+  right: 10mm !important; /* Четко 10мм от края */
+  left: auto !important;
+  width: auto !important;
+  z-index: 1000;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Навигация: теперь она всегда прижата вправо */
+.nav-masthead {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-end !important;
+  gap: 1.5rem; /* Расстояние между пунктами */
+}
+
+/* Чтобы ссылки не прыгали, убираем дефолтные отступы Bootstrap */
+.nav-masthead .nav-link {
+  margin: 0 !important;
+}
+
+/* Адаптив для мобилок (возвращаем в центр, чтобы не улетало) */
+@media (max-width: 768px) {
+  header.mb-auto {
+    position: static !important;
+    width: 100% !important;
+    margin: 0 0 2rem 0 !important;
+    display: block !important;
+  }
+  .nav-masthead {
+    justify-content: center !important;
+  }
+}
