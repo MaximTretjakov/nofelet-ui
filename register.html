@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-100">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nofelet - Регистрация</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://maximtretjakov.github.io/nofelet-ui/cover.css" rel="stylesheet">
+</head>
+<body class="d-flex h-100 text-center">
+
+<div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+  <header class="mb-auto">
+    <div>
+      <nav class="nav nav-masthead justify-content-center float-md-end">
+        <a class="nav-link" href="https://maximtretjakov.github.io/nofelet-ui/index.html">Главная</a>
+        <a class="nav-link" href="https://maximtretjakov.github.io/nofelet-ui/login.html">Вход</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="px-3 my-auto">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="choice-card auth-card p-5">
+          <h1 class="logo mb-4" style="font-size: 2.5rem;">Join Us</h1>
+
+          <form id="regForm" novalidate>
+            <div class="mb-4 text-start">
+              <input type="email" class="form-control custom-input" id="login" placeholder="Email (Логин)" required>
+              <div class="error-message" id="loginError">Введите корректный email</div>
+            </div>
+            <div class="mb-4 text-start">
+              <input type="password" class="form-control custom-input" id="password" placeholder="Пароль" required>
+              <div class="error-message" id="passwordError">Пароль не может быть пустым</div>
+            </div>
+
+            <button type="submit" class="btn btn-choose w-100 py-3 mt-2" id="submitBtn">
+              Создать аккаунт
+            </button>
+          </form>
+
+          <p class="mt-4 small text-muted">
+            Уже есть аккаунт? <a href="https://maximtretjakov.github.io/nofelet-ui/login.html" class="text-dark fw-bold">Войти</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="mt-auto text-dark-50">
+    <p>Nofelet UI, by <a href="#" class="text-dark">Your Team</a>.</p>
+  </footer>
+</div>
+
+<script src="https://maximtretjakov.github.io/nofelet-ui/auth.js"></script>
+</body>
+</html>

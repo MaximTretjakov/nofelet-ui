@@ -276,3 +276,55 @@ body {
   border-color: #1a1a1a;
   color: #fff;
 }
+
+/* Стили для форм авторизации */
+.custom-input {
+  background-color: #f8f9fa;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 12px 20px;
+  font-weight: 400;
+  transition: all 0.3s ease;
+}
+
+.custom-input:focus {
+  background-color: #fff;
+  border-color: #1a1a1a;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  outline: none;
+}
+
+/* Сообщения об ошибках */
+.error-message {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  margin-left: 15px;
+  display: none; /* Скрыты по умолчанию */
+}
+
+/* Класс для подсветки ошибки в инпуте */
+.is-invalid-custom {
+  border-color: #dc3545 !important;
+  background-color: #fff1f2;
+}
+
+/* --- Стили специально для страниц регистрации и входа --- */
+
+/* Запрещаем перенос строки в футере формы */
+.auth-footer-text {
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+
+/* Уточняем ширину и отступы только для карточек авторизации */
+.auth-card {
+  min-width: 350px; /* Чтобы фраза точно влезла */
+}
+
+@media (min-width: 992px) {
+  /* Увеличиваем внутренние отступы только в форме входа/регистрации */
+  .auth-card {
+    padding: 4rem 5rem !important;
+  }
+}
