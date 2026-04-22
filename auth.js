@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (regForm) {
         regForm.addEventListener('submit', (e) =>
-            handleFormSubmit(e, 'https://nofelet.duckdns.org/nofelet-web/api/v1/registration')
+            handleFormSubmit(e, 'https://nofelet.duckdns.org:8080/nofelet-web/api/v1/registration')
         );
     }
 
