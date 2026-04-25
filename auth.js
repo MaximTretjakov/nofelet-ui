@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', (e) =>
             // Тут можно указать другой URL для логина, если он есть
-            handleFormSubmit(e, 'https://nofelet.duckdns.org/nofelet-web/api/v1/auth')
+            handleFormSubmit(e, 'https://nofelet.duckdns.org:8080/nofelet-web/api/v1/auth')
         );
     }
 });
