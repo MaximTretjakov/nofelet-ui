@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 console.log('Успех:', result);
                 alert('Готово! Сейчас перенаправим...');
-                // window.location.href = 'choose.html';
+                window.location.href = 'choose.html';
             } else {
                 alert('Ошибка сервера. Попробуйте позже.');
             }
