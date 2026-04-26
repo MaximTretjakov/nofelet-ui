@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Подготовка данных
         const payload = {
             login: loginInput.value,
-            userName: userNameInput.value,
+            name: userNameInput.value,
             password: passwordInput.value
         };
 
