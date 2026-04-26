@@ -12,8 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const form = e.target;
         const loginInput = form.querySelector('#login');
+        const userNameInput = form.querySelector('#userName');
         const passwordInput = form.querySelector('#password');
         const loginError = form.querySelector('#loginError');
+        const userNameError = form.querySelector('#userNameError');
         const passwordError = form.querySelector('#passwordError');
 
         let isValid = true;
@@ -26,6 +28,16 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             loginInput.classList.remove('is-invalid-custom');
             loginError.style.display = 'none';
+        }
+
+        // Валидация имени пользователя
+        if (!userNameInput.value) {
+            userNameInput.classList.add('is-invalid-custom');
+            userNameError.style.display = 'block';
+            isValid = false;
+        } else {
+            userNameInput.classList.remove('is-invalid-custom');
+            userNameError.style.display = 'none';
         }
 
         // Валидация пароля
@@ -43,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Подготовка данных
         const payload = {
             login: loginInput.value,
+            userName: userNameInput.value,
             password: passwordInput.value
         };
 
