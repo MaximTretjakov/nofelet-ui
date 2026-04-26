@@ -58,7 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 const result = await response.json();
                 console.log('Успех:', result);
-                alert('Готово! Сейчас перенаправим...');
+                if (result.data && result.data.token) {
+                    localStorage.setItem('token', result.data.token);
+                }
                 window.location.href = 'choose.html';
             } else {
                 alert('Ошибка сервера. Попробуйте позже.');
