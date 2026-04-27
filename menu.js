@@ -29,7 +29,7 @@ function renderMenu(container, token) {
         `;
 
         // Защита: если гость забрел на страницу звонков — кидаем на главную
-        const protectedPages = ['choose.html', 'call.html', 'contacts.html'];
+        const protectedPages = ['choose.html', 'call.html', 'callee.html', 'contacts.html'];
         const currentPage = window.location.pathname.split('/').pop();
         if (protectedPages.includes(currentPage)) {
             window.location.href = 'index.html';
