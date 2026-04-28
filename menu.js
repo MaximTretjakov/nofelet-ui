@@ -1,4 +1,20 @@
+// Вспомогательная функция для получения ника из JWT
+function getMyNickname() {
+    const token = localStorage.getItem('token');
+    if (!token) return 'Аноним';
+    try {
+        const base64Url = token.split('.')[1];
+        const payload = JSON.parse(atob(base64Url));
+        return payload.userName || payload.sub; // Берем ник или email как фоллбэк
+    } catch (e) {
+        return 'Пользователь';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // 0. Сохраняем ник пользователя
+    sessionStorage.setItem('myNickname', getMyNickname());
+
     // 1. Сначала определяем состояние: авторизован или нет
     const token = localStorage.getItem('token');
     const nav = document.querySelector('.nav-masthead');
