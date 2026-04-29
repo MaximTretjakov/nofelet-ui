@@ -43,8 +43,7 @@
         <div class="video-wrapper">
             <div class="badge">
                 <span class="user-icon">○</span>
-                <span class="status">Вы</span>
-                <span id="calleeStatus" class=""></span>
+                <span id="calleeStatus" class="status">Вы</span>
             </div>
             <video id="localVideo" autoplay playsinline muted></video>
         </div>
@@ -92,6 +91,11 @@
 
     function log(...a) { console.log('[CALLER]', ...a); }
 
+    // ВЫВОДИМ СВОЙ НИК В БЕЙДЖ
+    function setNickName() {
+        document.getElementById('calleeStatus').innerText = sessionStorage.getItem('myNickname');
+    }
+
     // ЗАПРОС ВРЕМЕННЫХ КРЕДОВ ДЛЯ TURN
     async function getTurn() {
         return new Promise((resolve, reject) => {
@@ -106,6 +110,7 @@
 
     // КОННЕКТ К СИГНАЛЬНОМУ СЕРВЕРУ
     async function connect() {
+        setNickName()
         // ЛОЧИМ КНОПКУ ЗВОНКА
         document.getElementById('acceptCallBtn').disabled = true;
 

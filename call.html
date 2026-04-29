@@ -43,8 +43,7 @@
         <div class="video-wrapper">
             <div class="badge">
                 <span class="user-icon">○</span>
-                <span class="status">Вы</span>
-                <span id="callerStatus" class=""></span>
+                <span id="callerStatus" class="status">Вы</span>
             </div>
             <video id="localVideo" autoplay playsinline muted></video>
         </div>
@@ -91,6 +90,11 @@
         document.getElementById('inviteLink').innerText = `${window.location.origin}/nofelet-ui/callee.html?uuid=${uuid}`;
     }
 
+    // ВЫВОДИМ СВОЙ НИК В БЕЙДЖ
+    function setNickName() {
+        document.getElementById('callerStatus').innerText = sessionStorage.getItem('myNickname');
+    }
+
     // ЗАПРОС ВРЕМЕННЫХ КРЕДОВ ДЛЯ TURN
     async function getTurn() {
         return new Promise((resolve, reject) => {
@@ -106,6 +110,7 @@
     // КОННЕКТ К СИГНАЛЬНОМУ СЕРВЕРУ
     async function connect() {
         inviteUrl();
+        setNickName()
 
         ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
 
