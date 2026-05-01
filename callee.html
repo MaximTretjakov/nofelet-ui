@@ -33,7 +33,7 @@
     <div class="video-grid">
         <div class="video-wrapper">
             <div class="badge">
-                <span class="user-icon">●</span>
+                <span class="user-icon"></span>
                 <span class="status">Ожидание...</span>
                 <span id="callerStatus" class=""></span>
             </div>
@@ -42,7 +42,7 @@
 
         <div class="video-wrapper">
             <div class="badge">
-                <span class="user-icon">○</span>
+                <span class="user-icon"></span>
                 <span id="calleeStatus" class="status">Вы</span>
             </div>
             <video id="localVideo" autoplay playsinline muted></video>
@@ -120,7 +120,10 @@
             // Сразу после коннекта заявляем о себе
             ws.send(JSON.stringify({
                 type: 'join',
-                nickname: sessionStorage.getItem('myNickname')
+                participant:{
+                    name: sessionStorage.getItem('myNickname'),
+                    role: 'callee'
+                }
             }));
         };
 
@@ -128,9 +131,9 @@
             const msg = JSON.parse(e.data);
 
             if (msg.type === 'ready') {
-                log('Собеседник зашел: ', msg.peerNickname);
+                log('Собеседник зашел: ', msg.participant.name);
                 // Обновляем бейдж
-                document.querySelector('.status').innerText = msg.peerNickname;
+                document.querySelector('.status').innerText = msg.participant.name;
             }
 
             if (msg.type === 'offer') {
