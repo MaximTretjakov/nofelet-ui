@@ -34,8 +34,8 @@
         <div class="video-wrapper">
             <div class="badge">
                 <span class="user-icon"></span>
-                <span class="status">Ожидание...</span>
-                <span id="calleeStatus" class=""></span>
+                <span id="calleeStatus" class="status">Ожидание...</span>
+<!--                <span id="calleeStatus" class=""></span>-->
             </div>
             <video id="remoteVideo" autoplay playsinline></video>
         </div>
@@ -131,7 +131,7 @@
             if (msg.type === 'ready') {
                 log('Собеседник зашел: ', msg.participant.name);
                 // Обновляем бейдж
-                document.querySelector('.status').innerText = msg.participant.name;
+                document.getElementById('calleeStatus').innerText = msg.participant.name;
             }
 
             if (msg.type === 'answer') {
