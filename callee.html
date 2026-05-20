@@ -49,6 +49,25 @@
         </div>
     </div>
 
+    <div id="chatSidebar" class="chat-sidebar">
+        <div class="chat-header">
+            <h5>Чат встречи</h5>
+            <button type="button" class="btn-close shadow-none" onclick="toggleChat()"></button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+        </div>
+        <div class="chat-input-area">
+            <form id="chatForm" class="chat-input-group">
+                <input type="text" id="chatInput" class="chat-input-field" placeholder="Сообщение..." autocomplete="off">
+                <button type="submit" class="btn-send-msg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2z"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Круглые кнопки в стиле Google Meet -->
     <nav class="controls">
         <button onclick="acceptCall()" class="btn-round btn-call btn-start controls disabled" id="acceptCallBtn">
@@ -63,6 +82,10 @@
         </button>
         <button onclick="soundOff()" class="btn-round btn-toggle" id="soundToggle" title="Микрофон">Mic</button>
         <button onclick="videoOff()" class="btn-round btn-toggle" id="videoToggle" title="Камера">Cam</button>
+        <button class="btn-round btn-toggle" id="chatToggle" onclick="toggleChat()">
+            CHAT
+            <span class="chat-badge" id="chatBadge"></span>
+        </button>
     </nav>
 </main>
 
