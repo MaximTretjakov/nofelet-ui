@@ -132,13 +132,19 @@
 
     // КОННЕКТ К СИГНАЛЬНОМУ СЕРВЕРУ
     async function connect() {
+        // ГЕНЕРАЦИЯ ССЫЛКИ ПРИГЛАШЕНИЯ
         inviteUrl();
-        setNickName()
+
+        // УСТАНАВЛИВАЕМ НИК В БЕЙДЖ
+        setNickName();
+
+        // ПОДРУБАЕМСЯ К ЧАТУ
+        chatInit(uuid);
 
         ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
 
         ws.onopen = () => {
-            // Шлем ник пользака на сигнальный сервер
+            // ШЛЕМ НИК ПОЛЬЗАКА НА СИГНАЛЬНЫЙ СЕРВЕР
             ws.send(JSON.stringify({
                 type: 'join',
                 participant:{
@@ -364,43 +370,9 @@
         }, 2000);
     });
 
-    // --- ЛОГИКА ЧАТА (UI) ---
-    function toggleChat() {
-        const sidebar = document.getElementById('chatSidebar');
-        sidebar.classList.toggle('active');
-        document.body.classList.toggle('chat-open');
-
-        // Прячем бадж уведомлений при открытии
-        if (sidebar.classList.contains('active')) {
-            document.getElementById('chatBadge').style.display = 'none';
-        }
-    }
-
-    document.getElementById('chatForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const input = document.getElementById('chatInput');
-        const text = input.value.trim();
-        if (text) {
-            appendMessage('Вы', text, true);
-            input.value = '';
-            // Сюда добавишь свой socket.send(JSON.stringify({type: 'chat', text: text}))
-        }
-    });
-
-    function appendMessage(author, text, isMe) {
-        const container = document.getElementById('chatMessages');
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${isMe ? 'me' : 'other'}`;
-        msgDiv.innerHTML = `
-            <div class="message-author">${author}</div>
-            <div class="message-text">${text}</div>
-        `;
-        container.appendChild(msgDiv);
-        container.scrollTop = container.scrollHeight;
-    }
-
     window.onload = connect;
 </script>
-<script src="menu.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/chat.js"></script>
 </body>
 </html>
