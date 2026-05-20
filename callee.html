@@ -110,7 +110,12 @@
 
     // КОННЕКТ К СИГНАЛЬНОМУ СЕРВЕРУ
     async function connect() {
-        setNickName()
+        // УСТАНАВЛИВАЕМ НИК В БЕЙДЖ
+        setNickName();
+
+        // ПОДРУБАЕМСЯ К ЧАТУ
+        chatInit();
+
         // ЛОЧИМ КНОПКУ ЗВОНКА
         document.getElementById('acceptCallBtn').disabled = true;
 
@@ -378,6 +383,6 @@
 
     window.onload = connect;
 </script>
-<script src="menu.js"></script>
+<script src="js/menu.js"></script>
 </body>
 </html>
