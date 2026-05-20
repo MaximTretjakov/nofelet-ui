@@ -40,8 +40,8 @@ function renderMenu(container, token) {
     if (!token) {
         // Меню для гостей
         container.innerHTML = `
-            <a class="nav-link" href="../index.html">Главная</a>
-            <a class="nav-link" href="../login.html">Вход</a>
+            <a class="nav-link" href="index.html">Главная</a>
+            <a class="nav-link" href="login.html">Вход</a>
         `;
 
         // Защита: если гость забрел на страницу звонков — кидаем на главную
@@ -53,8 +53,8 @@ function renderMenu(container, token) {
     } else {
         // Меню для авторизованных
         container.innerHTML = `
-            <a class="nav-link" href="../choose.html">Звонки</a>
-            <a class="nav-link" href="../contacts.html">Контакты</a>
+            <a class="nav-link" href="choose.html">Звонки</a>
+            <a class="nav-link" href="contacts.html">Контакты</a>
             <a class="nav-link" href="#" id="logoutBtn">Выход</a>
         `;
     }
