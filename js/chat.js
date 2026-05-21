@@ -2,7 +2,7 @@
 const urlParams = new URLSearchParams(window.location.search);
 const chatUuid = urlParams.get('uuid');
 
-function chatInit(chatUuid){
+function chatInit(chatUuid, recipient){
     if (!chatUuid) {
         console.error("UUID не найден в URL");
     } else {
@@ -47,10 +47,10 @@ function chatInit(chatUuid){
             e.preventDefault();
             const text = chatInput.value.trim();
             if (text && chatSocket.readyState === WebSocket.OPEN) {
-                sendChatEvent("message", {
+                sendChatEvent("text", {
                     chat_id: chatUuid,
                     sender: sessionStorage.getItem('myNickname') || 'Аноним',
-                    recipient: "all",
+                    recipient: recipient,
                     content: text
                 });
                 appendMessage('Вы', text, true);

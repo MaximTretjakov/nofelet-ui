@@ -139,7 +139,7 @@
         setNickName();
 
         // ПОДРУБАЕМСЯ К ЧАТУ
-        chatInit(uuid);
+        chatInit(uuid, recipient);
 
         ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
 
