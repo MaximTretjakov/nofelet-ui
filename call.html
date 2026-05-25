@@ -51,20 +51,27 @@
 
     <div id="chatSidebar" class="chat-sidebar">
         <div class="chat-header">
-            <h5>Чат встречи</h5>
-            <button type="button" class="btn-close shadow-none" onclick="toggleChat()"></button>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('chat')">Чат</button>
+                <button class="tab-btn" onclick="switchTab('users')">Участники</button>
+            </div>
+            <button onclick="toggleChat()" style="border:none; background:none; cursor:pointer;">✕</button>
         </div>
-        <div class="chat-messages" id="chatMessages">
+
+        <div id="tab-chat" class="tab-content">
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-area">
+                <div id="replyIndicator" style="display:none; font-size: 12px; color: #1a73e8; margin-bottom: 5px;"></div>
+                <form id="chatForm" class="chat-input-group">
+                    <input type="text" id="chatInput" class="chat-input-field" placeholder="Сообщение..." autocomplete="off">
+                    <button type="submit" class="btn-send-msg">➤</button>
+                </form>
+            </div>
         </div>
-        <div class="chat-input-area">
-            <form id="chatForm" class="chat-input-group">
-                <input type="text" id="chatInput" class="chat-input-field" placeholder="Сообщение..." autocomplete="off">
-                <button type="submit" class="btn-send-msg">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2z"></path>
-                    </svg>
-                </button>
-            </form>
+
+        <div id="tab-users" class="tab-content" style="display:none;">
+            <div class="participants-list" id="participantsList">
+            </div>
         </div>
     </div>
 

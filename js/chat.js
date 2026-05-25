@@ -1,6 +1,8 @@
 // --- ЛОГИКА WEBSOCKET ЧАТА ---
 const urlParams = new URLSearchParams(window.location.search);
 const chatUuid = urlParams.get('uuid');
+const activeParticipants = new Map(); // ID -> Nickname
+let currentRecipient = "all"; // "all" или ID пользователя
 
 function chatInit(chatUuid){
     if (!chatUuid) {
@@ -50,7 +52,7 @@ function chatInit(chatUuid){
                 sendChatEvent("message", {
                     chat_id: chatUuid,
                     sender: sessionStorage.getItem('myNickname') || 'Аноним',
-                    recipient: "all",
+                    recipient: currentRecipient,
                     content: text
                 });
                 appendMessage('Вы', text, true);
@@ -81,4 +83,65 @@ function toggleChat() {
     if (sidebar.classList.contains('active')) {
         document.getElementById('chatBadge').style.display = 'none';
     }
+}
+
+// --- TAB SWITCHER ---
+function switchTab(tabName) {
+    // Скрываем все
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+    // Показываем нужную
+    const targetTab = document.getElementById(`tab-${tabName}`);
+
+    // Если это чат - показываем как flex, иначе как block (или тоже flex)
+    targetTab.style.display = (tabName === 'chat') ? 'flex' : 'block';
+
+    event.currentTarget.classList.add('active');
+}
+
+// --- PARTICIPANTS LOGIC ---
+function updateParticipantsList() {
+    const list = document.getElementById('participantsList');
+    list.innerHTML = '';
+
+    // Добавляем "Все"
+    const all = document.createElement('div');
+    all.className = 'participant-item';
+    all.textContent = "🔊 Всем (Общий чат)";
+    all.onclick = () => setRecipient("all", "Всем");
+    list.appendChild(all);
+
+    activeParticipants.forEach((nick, id) => {
+        const item = document.createElement('div');
+        item.className = 'participant-item';
+        item.textContent = nick + (id === 'me' ? ' (Вы)' : '');
+        item.onclick = () => setRecipient(id, nick);
+        list.appendChild(item);
+    });
+}
+
+// --- RECIPIENT HANDLER ---
+function setRecipient(id, nick) {
+    currentRecipient = id;
+    const indicator = document.getElementById('replyIndicator');
+
+    if (id === "all") {
+        indicator.style.display = 'none';
+        document.getElementById('chatInput').placeholder = "Сообщение...";
+    } else {
+        indicator.style.display = 'block';
+        indicator.textContent = `Пишете пользователю: ${nick}`;
+        document.getElementById('chatInput').placeholder = `Сообщение для ${nick}...`;
+    }
+    // Авто-переключение на вкладку чата после клика на юзера
+    switchTab('chat');
+}
+
+// Пример функции, которая будет вызываться, когда от сервера пришел список
+// (Тебе нужно будет вызывать её в твоем WebSocket onmessage)
+function onUserListReceived(users) {
+    activeParticipants.clear();
+    users.forEach(u => activeParticipants.set(u.id, u.nick));
+    updateParticipantsList();
 }
