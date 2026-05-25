@@ -555,3 +555,60 @@ body.chat-open {
     align-items: center;
     justify-content: center;
 }
+
+/* Стили вкладок */
+.tabs { display: flex; gap: 10px; }
+.tab-btn {
+    border: none;
+    background: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #5f6368;
+    border-bottom: 2px solid transparent;
+}
+.tab-btn.active { color: #1a73e8; border-bottom: 2px solid #1a73e8; }
+
+/* Список участников */
+.participants-list { padding: 1rem; }
+.participant-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s;
+}
+.participant-item:hover { background: #f8f9fa; }
+
+/* 1. Сам сайдбар - вертикальный флекс */
+.chat-sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Высота на весь экран */
+    background: #fff;
+    /* остальные твои стили */
+}
+
+/* 2. Контейнер вкладки чата - тоже вертикальный флекс */
+#tab-chat {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Занимает всю доступную высоту */
+    overflow: hidden; /* Важно, чтобы ничего не вылезало */
+}
+
+/* 3. Список сообщений - растет и скроллится */
+.chat-messages {
+    flex: 1; /* Занимает все пространство между хедером и инпутом */
+    overflow-y: auto; /* Включает скролл, если сообщений много */
+    padding: 1rem;
+}
+
+/* 4. Поле ввода - никогда не сжимается (прижато к низу) */
+.chat-input-area {
+    flex-shrink: 0; /* Запрещает сжиматься */
+    padding: 1rem;
+    border-top: 1px solid #f0f0f2;
+    background: #fff;
+}
