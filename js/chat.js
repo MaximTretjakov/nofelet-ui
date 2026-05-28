@@ -13,19 +13,35 @@ function chatInit(chatUuid){
         chatSocket.onopen = () => {
             console.log("Чат подключен");
             const nick = sessionStorage.getItem('myNickname') || 'Аноним';
-            sendChatEvent("join", { chat_id: chatUuid, nick: nick });
+            // Отправка согласно новому контракту
+            sendChatEvent("join_room", { chat_id: chatUuid, nick: nick });
         };
 
         chatSocket.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                if (data.type === 'ping') {
-                    sendChatEvent('pong', {});
-                } else if (data.type === 'message') {
-                    appendMessage(data.payload.sender, data.payload.content, false);
+                const payload = data.payload;
+
+                switch (data.type) {
+                    case 'room_state':
+                        // Обработка снапшота всех пользователей
+                        handleRoomState(payload.room_state);
+                        break;
+                    case 'user_joined':
+                        // Логика добавления одного юзера (можно добавить в лог чата)
+                        appendMessage('System', `${payload.user_joined.nick} присоединился`, false);
+                        break;
+                    case 'leave_room':
+                        appendMessage('System', `${payload.leave_room.nick} покинул чат`, false);
+                        break;
+                    case 'send_message':
+                        // Обработка входящего сообщения
+                        const msg = payload.new_message;
+                        appendMessage(msg.sender, msg.content, false);
+                        break;
                 }
             } catch (e) {
-                console.error("Ошибка парсинга сообщения:", e);
+                console.error("Ошибка парсинга:", e);
             }
         };
 
@@ -38,18 +54,14 @@ function chatInit(chatUuid){
             }
         }
 
-        // Обработка набора текста (typing)
-        const chatInput = document.getElementById('chatInput');
-        chatInput.addEventListener('input', () => {
-            sendChatEvent("typing", { chat_id: chatUuid, is_typing: true });
-        });
-
         // Обработка отправки сообщения
         document.getElementById('chatForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            const chatInput = document.getElementById('chatInput');
             const text = chatInput.value.trim();
+
             if (text && chatSocket.readyState === WebSocket.OPEN) {
-                sendChatEvent("message", {
+                sendChatEvent("send_message", {
                     chat_id: chatUuid,
                     sender: sessionStorage.getItem('myNickname') || 'Аноним',
                     recipient: currentRecipient,
@@ -57,11 +69,17 @@ function chatInit(chatUuid){
                 });
                 appendMessage('Вы', text, true);
                 chatInput.value = '';
-            } else if (chatSocket.readyState !== WebSocket.OPEN) {
-                alert("Соединение с чатом потеряно!");
             }
         });
     }
+}
+
+function handleRoomState(usersObj) {
+    activeParticipants.clear();
+    for (const [id, nick] of Object.entries(usersObj)) {
+        activeParticipants.set(id, nick);
+    }
+    updateParticipantsList();
 }
 
 function appendMessage(author, text, isMe) {
@@ -76,36 +94,28 @@ function appendMessage(author, text, isMe) {
     container.scrollTop = container.scrollHeight;
 }
 
+// --- УПРАВЛЕНИЕ UI ---
+
 function toggleChat() {
     const sidebar = document.getElementById('chatSidebar');
     sidebar.classList.toggle('active');
     document.body.classList.toggle('chat-open');
-    if (sidebar.classList.contains('active')) {
-        document.getElementById('chatBadge').style.display = 'none';
-    }
 }
 
-// --- TAB SWITCHER ---
 function switchTab(tabName) {
-    // Скрываем все
     document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
-    // Показываем нужную
     const targetTab = document.getElementById(`tab-${tabName}`);
-
-    // Если это чат - показываем как flex, иначе как block (или тоже flex)
     targetTab.style.display = (tabName === 'chat') ? 'flex' : 'block';
 
     event.currentTarget.classList.add('active');
 }
 
-// --- PARTICIPANTS LOGIC ---
 function updateParticipantsList() {
     const list = document.getElementById('participantsList');
     list.innerHTML = '';
 
-    // Добавляем "Все"
     const all = document.createElement('div');
     all.className = 'participant-item';
     all.textContent = "🔊 Всем (Общий чат)";
@@ -115,33 +125,24 @@ function updateParticipantsList() {
     activeParticipants.forEach((nick, id) => {
         const item = document.createElement('div');
         item.className = 'participant-item';
-        item.textContent = nick + (id === 'me' ? ' (Вы)' : '');
+        item.textContent = nick;
         item.onclick = () => setRecipient(id, nick);
         list.appendChild(item);
     });
 }
 
-// --- RECIPIENT HANDLER ---
 function setRecipient(id, nick) {
     currentRecipient = id;
     const indicator = document.getElementById('replyIndicator');
+    const input = document.getElementById('chatInput');
 
     if (id === "all") {
         indicator.style.display = 'none';
-        document.getElementById('chatInput').placeholder = "Сообщение...";
+        input.placeholder = "Сообщение...";
     } else {
         indicator.style.display = 'block';
         indicator.textContent = `Пишете пользователю: ${nick}`;
-        document.getElementById('chatInput').placeholder = `Сообщение для ${nick}...`;
+        input.placeholder = `Сообщение для ${nick}...`;
     }
-    // Авто-переключение на вкладку чата после клика на юзера
     switchTab('chat');
-}
-
-// Пример функции, которая будет вызываться, когда от сервера пришел список
-// (Тебе нужно будет вызывать её в твоем WebSocket onmessage)
-function onUserListReceived(users) {
-    activeParticipants.clear();
-    users.forEach(u => activeParticipants.set(u.id, u.nick));
-    updateParticipantsList();
 }
