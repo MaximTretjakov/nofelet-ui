@@ -30,6 +30,9 @@ function chatInit(chatUuid){
                     case 'user_joined':
                         // Логика добавления одного юзера (можно добавить в лог чата)
                         appendMessage('System', `${payload.user_joined.nick} присоединился`, false);
+                        const nick = payload.user_joined.nick;
+                        activeParticipants.set(nick, nick);
+                        updateParticipantsList();
                         break;
                     case 'leave_room':
                         appendMessage('System', `${payload.leave_room.nick} покинул чат`, false);
