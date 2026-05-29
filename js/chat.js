@@ -8,7 +8,8 @@ function chatInit(chatUuid){
     if (!chatUuid) {
         console.error("UUID не найден в URL");
     } else {
-        const chatSocket = new WebSocket(`wss://nofelet.duckdns.org:8444/chat/${chatUuid}`);
+        // const chatSocket = new WebSocket(`wss://nofelet.duckdns.org:8444/chat/${chatUuid}`);
+        const chatSocket = new WebSocket(`ws://localhost:8444/chat/${chatUuid}`);
 
         chatSocket.onopen = () => {
             console.log("Чат подключен");
@@ -34,7 +35,7 @@ function chatInit(chatUuid){
                     case 'leave_room':
                         appendMessage('System', `${payload.leave_room.nick} покинул чат`, false);
                         break;
-                    case 'send_message':
+                    case 'new_message':
                         // Обработка входящего сообщения
                         const msg = payload.new_message;
                         appendMessage(msg.sender, msg.content, false);
