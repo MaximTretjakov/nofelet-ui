@@ -61,7 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (result.data && result.data.token) {
                     localStorage.setItem('token', result.data.token);
                 }
-                window.location.href = 'choose.html';
+
+                // Проверяем, есть ли сохраненная ссылка приглашение
+                const targetUrl = localStorage.getItem('redirectAfterLogin');
+                if (targetUrl) {
+                    localStorage.removeItem('redirectAfterLogin'); // Очищаем ключ
+                    window.location.href = targetUrl; // Перенаправляем в комнату по ссылке приглашению
+                } else {
+                    window.location.href = 'choose.html'; // Перенаправляем в лобби
+                }
             } else {
                 alert('Ошибка сервера. Попробуйте позже.');
             }
