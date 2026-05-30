@@ -44,9 +44,6 @@ function renderMenu(container, token) {
             <a class="nav-link" href="login.html">Вход</a>
         `;
 
-        // Сохраняем текущий полный URL с ссылкой приглашением
-        localStorage.setItem('redirectAfterLogin', window.location.href);
-
         // Защита: если гость забрел на страницу звонков — кидаем на главную
         const protectedPages = ['choose.html', 'call.html', 'callee.html', 'contacts.html'];
         const currentPage = window.location.pathname.split('/').pop();
