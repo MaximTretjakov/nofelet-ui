@@ -98,6 +98,15 @@
 
 <!-- WebRTC логика-->
 <script>
+    // ПРОВЕРКА АВТОРИЗАЦИИ (ДОПОЛНИТЕЛЬНО ЕСЛИ ПОЛЬЗОВАТЕЛЬ ПЕРЕШЕЛ ПО ССЫЛКЕ ПРИГЛАШЕНИЮ)
+    const token = localStorage.getItem('token');
+    if (!token) {
+        // Сохраняем текущий адрес с ?uuid=...
+        localStorage.setItem('redirectAfterLogin', window.location.href);
+        // Уходим на логин
+        window.location.href = 'index.html';
+    }
+
     // СОЗДАЕМ ОБЪЕКТ ЗВУКА
     const ringtone = new Audio('./assets/call.mp3');
     ringtone.loop = true;   // Зацикливаем
@@ -140,8 +149,6 @@
 
     // КОННЕКТ К СИГНАЛЬНОМУ СЕРВЕРУ
     async function connect() {
-        // ПРОВЕРКА АВТОРИЗАЦИИ (ДОПОЛНИТЕЛЬНО ЕСЛИ ПОЛЬЗОВАТЕЛЬ ПЕРЕШЕЛ ПО ССЫЛКЕ ПРИГЛАШЕНИЮ)
-        checkAuth();
         // УСТАНАВЛИВАЕМ НИК В БЕЙДЖ
         setNickName();
 
@@ -411,16 +418,6 @@
         });
 
         console.log("Аудио разблокировано");
-    }
-
-    function checkAuth(){
-        const token = localStorage.getItem('token');
-        if (!token) {
-            // Сохраняем текущий адрес с ?uuid=...
-            localStorage.setItem('redirectAfterLogin', window.location.href);
-            // Уходим на логин
-            window.location.href = 'index.html';
-        }
     }
 
     window.onload = connect;
