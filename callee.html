@@ -192,7 +192,7 @@
                 hBtn.classList.remove('controls-hidden');
 
                 // ВКЛЮЧАЕМ МЕЛОДИЮ ЗВОНКА
-                ringtone.play().catch(err => console.error("Звук заблокирован:", err));
+                // ringtone.play().catch(err => console.error("Звук заблокирован:", err));
 
                 // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН ИНИЦИАТОРА
                 const caller = document.getElementById('callerStatus');
@@ -407,7 +407,7 @@
     }
 
     // УБИРАЕМ ОВЕРЛЕЙ
-    function unlock() {
+    async function unlock() {
         // Убираем оверлей
         document.getElementById('startOverlay').style.display = 'none';
 
@@ -418,6 +418,83 @@
         });
 
         console.log("Аудио разблокировано");
+
+
+
+
+        // // УБИРАЕМ АНИМАЦИЮ С КНОПКИ START
+        // const btn = document.getElementById('acceptCallBtn');
+        // btn.classList.remove('ringing');
+
+        // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН
+        const status = document.getElementById('calleeStatus');
+        status.classList.add('voice-indicator');
+
+        // // ГЛУШИМ ЗВУК ВЫЗОВА
+        // ringtone.pause();
+        // ringtone.currentTime = 0; // Сброс в начало
+
+        // // ЛОЧИМ КНОПКУ ЗВОНКА
+        // document.getElementById('acceptCallBtn').disabled = true;
+
+        // ЗАПРОС МЕДИА
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideo').srcObject = localStream;
+
+        // ЗАПРОС ВРЕМЕННЫХ КРЕДОВ В TURN
+        configuration.iceServers = await getTurn();
+
+        // СОЗДАЕМ СОЕДИНЕНИЕ
+        pc = new RTCPeerConnection(configuration);
+
+        // ДОБАВЛЯЕМ ЛОКАЛЬНОЕ ВИДЕО
+        localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+        // ДОБАВЛЯЕМ УДАЛЕННОЕ ВИДЕО
+        pc.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
+
+        // ОТСЫЛАЕМ КАНАДИДАТЫ
+        pc.onicecandidate = e => {
+            if (e.candidate) {
+                ws.send(JSON.stringify({ type: 'ice-candidate', candidate: e.candidate }));
+            }
+        };
+
+        // ЛОГИРУЕМ СОСТОЯНИЕ СОЕДИНЕНИЯ
+        pc.onconnectionstatechange = () => {
+            log('connectionState:', pc.connectionState);
+            const state = pc.connectionState;
+            if (state === 'connected') {
+                log('connectionState:', 'connected');
+            } else if (state === 'disconnected' || state === 'failed') {
+                log('connectionState:', 'failed or disconnected');
+                // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН ИНИЦИАТОРА
+                const caller = document.getElementById('callerStatus');
+                caller.classList.remove('voice-indicator');
+                resetVideoContainer('remoteVideo');
+            } else if (state === 'connecting') {
+                log('connectionState:', 'connecting...');
+            }
+        };
+
+        // ПРИЕМ ОФЕРА ОТ ИНИЦИАТОРА
+        await pc.setRemoteDescription({
+            type: 'offer',
+            sdp: pendingOffer.sdp
+        });
+
+        // ОБРАБОТКА КАНДИДАТОВ И ЧИСТКА ОЧЕРЕДИ КАНДИДАТОВ
+        for (const c of iceCandidatesQueue) await pc.addIceCandidate(c);
+        iceCandidatesQueue = [];
+
+        // СОЗДАНИЕ АНСВЕРА
+        const answer = await pc.createAnswer();
+
+        // ОБНОВЛЯЕМ ЛОКАЛЬНЫЙ ДЕСКРИПШЕН АНСВЕРОМ
+        await pc.setLocalDescription(answer);
+
+        // ОТСЫЛАЕМ АНСВЕР ИНИЦИАТОРУ ЧЕРЕЗ СИГНАЛЬНЫЙ СЕРВЕР
+        ws.send(JSON.stringify({ type: 'answer', sdp: answer.sdp }));
     }
 
     window.onload = connect;
