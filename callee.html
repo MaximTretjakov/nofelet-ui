@@ -146,9 +146,6 @@
         // ПОДРУБАЕМСЯ К ЧАТУ
         chatInit(uuid);
 
-        // ЛОЧИМ КНОПКУ ЗВОНКА
-        document.getElementById('acceptCallBtn').disabled = true;
-
         ws = new WebSocket(`wss://nofelet.duckdns.org:8443/connect/${uuid}`);
 
         ws.onopen = () => {
@@ -332,11 +329,6 @@
         });
 
         console.log("Аудио разблокировано");
-
-
-        // УБИРАЕМ АНИМАЦИЮ С КНОПКИ START
-        const btn = document.getElementById('acceptCallBtn');
-        btn.classList.remove('ringing');
 
         // Убираем оверлей
         document.getElementById('startOverlay').style.display = 'none';
