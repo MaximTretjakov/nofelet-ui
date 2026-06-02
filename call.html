@@ -108,9 +108,9 @@
 
     // КОНФИГУРАЦИЯ С TURN СЕРВЕРАМИ
     const configuration = {
-        // iceTransportPolicy: 'relay',
-        // bundlePolicy: 'max-bundle',
-        // rtcpMuxPolicy: 'require'
+        iceTransportPolicy: 'relay',
+        bundlePolicy: 'max-bundle',
+        rtcpMuxPolicy: 'require'
     };
 
     function log(...a) { console.log('[CALLER]', ...a); }
@@ -192,7 +192,7 @@
                     const c = iceCandidatesQueue.shift();
                     await addCandidateSafe(pc, c);
                 }
-                // iceCandidatesQueue = [];
+
                 // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН
                 const status = document.getElementById('calleeStatus');
                 status.classList.add('voice-indicator');
@@ -253,10 +253,6 @@
                 log('connectionState:', 'connected');
             } else if (state === 'disconnected' || state === 'failed') {
                 log('connectionState:', 'failed or disconnected');
-
-                console.error("ICE FAILED! Проверяем: ", pc.localDescription, pc.remoteDescription);
-                // Это покажет, есть ли у нас вообще медиа-треки в описании
-
                 // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН У СОБЕСЕДНИКА
                 const callee = document.getElementById('calleeStatus');
                 callee.classList.remove('voice-indicator');
