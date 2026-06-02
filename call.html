@@ -108,9 +108,9 @@
 
     // КОНФИГУРАЦИЯ С TURN СЕРВЕРАМИ
     const configuration = {
-        iceTransportPolicy: 'relay',
-        bundlePolicy: 'max-bundle',
-        rtcpMuxPolicy: 'require'
+        // iceTransportPolicy: 'relay',
+        // bundlePolicy: 'max-bundle',
+        // rtcpMuxPolicy: 'require'
     };
 
     function log(...a) { console.log('[CALLER]', ...a); }
@@ -172,19 +172,40 @@
 
             if (msg.type === 'answer') {
                 log('answer received');
-                await pc.setRemoteDescription(msg);
-                for (const c of iceCandidatesQueue) await pc.addIceCandidate(c);
-                iceCandidatesQueue = [];
+
+                console.log("[CALLER] Получен answer. Текущий signalingState:", pc.signalingState);
+
+                // ЗАЩИТА: Применяем ответ ТОЛЬКО если мы ждем ответ (состояние have-local-offer)
+                if (pc.signalingState === 'have-local-offer') {
+                    try {
+                        await pc.setRemoteDescription(new RTCSessionDescription(msg));
+                        console.log("[CALLER] Answer успешно применен");
+                    } catch (e) {
+                        console.error("[CALLER] Ошибка при setRemoteDescription(answer):", e);
+                    }
+                } else {
+                    console.warn("[CALLER] Игнорируем дубликат ответа, т.к. состояние уже:", pc.signalingState);
+                }
+
+                // И ТОЛЬКО ПОСЛЕ ЭТОГО обрабатываем очередь
+                while (iceCandidatesQueue.length > 0) {
+                    const c = iceCandidatesQueue.shift();
+                    await addCandidateSafe(pc, c);
+                }
+                // iceCandidatesQueue = [];
                 // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН
                 const status = document.getElementById('calleeStatus');
                 status.classList.add('voice-indicator');
             }
 
             if (msg.type === 'ice-candidate') {
+                console.log(`[ICE] Получен кандидат: ${JSON.stringify(msg.candidate)}`);
                 if (pc?.remoteDescription) {
-                    await pc.addIceCandidate(msg.candidate);
+                    await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
+                    log('ice-candidate received');
                 } else {
-                    iceCandidatesQueue.push(msg.candidate);
+                    iceCandidatesQueue.push(new RTCIceCandidate(msg.candidate));
+                    log('ice-candidate put in queue');
                 }
             }
         };
@@ -232,6 +253,10 @@
                 log('connectionState:', 'connected');
             } else if (state === 'disconnected' || state === 'failed') {
                 log('connectionState:', 'failed or disconnected');
+
+                console.error("ICE FAILED! Проверяем: ", pc.localDescription, pc.remoteDescription);
+                // Это покажет, есть ли у нас вообще медиа-треки в описании
+
                 // ВЫКЛЮЧАЕМ СТАТУС ОНЛАЙН У СОБЕСЕДНИКА
                 const callee = document.getElementById('calleeStatus');
                 callee.classList.remove('voice-indicator');
@@ -376,6 +401,25 @@
             linkElement.style.color = "";
         }, 2000);
     });
+
+    async function addCandidateSafe(pc, candidateData) {
+        // 1. Создаем объект
+        const candidate = new RTCIceCandidate(candidateData);
+
+        // 2. БЕЗОПАСНОСТЬ: Добавляем только если есть remoteDescription
+        if (pc.remoteDescription && pc.remoteDescription.type) {
+            try {
+                await pc.addIceCandidate(candidate);
+                console.log("Кандидат добавлен успешно");
+            } catch (e) {
+                console.error("Ошибка при добавлении кандидата:", e);
+            }
+        } else {
+            // Если remoteDescription еще нет, сохраняем в очередь на потом
+            console.warn("remoteDescription еще не установлен, очередь кандидата...");
+            iceCandidatesQueue.push(candidateData);
+        }
+    }
 
     window.onload = connect;
 </script>
