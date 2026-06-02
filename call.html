@@ -107,11 +107,7 @@
     let uuid = crypto.randomUUID();
 
     // КОНФИГУРАЦИЯ С TURN СЕРВЕРАМИ
-    const configuration = {
-        // iceTransportPolicy: 'relay',
-        // bundlePolicy: 'max-bundle',
-        // rtcpMuxPolicy: 'require'
-    };
+    const configuration = {};
 
     function log(...a) { console.log('[CALLER]', ...a); }
 
@@ -172,9 +168,6 @@
 
             if (msg.type === 'answer') {
                 log('answer received');
-
-                console.log("[CALLER] Получен answer. Текущий signalingState:", pc.signalingState);
-
                 // ЗАЩИТА: Применяем ответ ТОЛЬКО если мы ждем ответ (состояние have-local-offer)
                 if (pc.signalingState === 'have-local-offer') {
                     try {
@@ -199,13 +192,10 @@
             }
 
             if (msg.type === 'ice-candidate') {
-                console.log(`[ICE] Получен кандидат: ${JSON.stringify(msg.candidate)}`);
                 if (pc?.remoteDescription) {
                     await pc.addIceCandidate(new RTCIceCandidate(msg.candidate));
-                    log('ice-candidate received');
                 } else {
                     iceCandidatesQueue.push(new RTCIceCandidate(msg.candidate));
-                    log('ice-candidate put in queue');
                 }
             }
         };
