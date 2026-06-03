@@ -423,6 +423,10 @@
         document.getElementById('startOverlay').style.display = 'none';
         console.log("Оверлей убран");
 
+        // УБИРАЕМ АНИМАЦИЮ С КНОПКИ START
+        const btn = document.getElementById('acceptCallBtn');
+        btn.classList.remove('ringing');
+
         // ВКЛЮЧАЕМ СТАТУС ОНЛАЙН
         const status = document.getElementById('calleeStatus');
         status.classList.add('voice-indicator');
