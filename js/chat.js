@@ -36,7 +36,7 @@ function chatInit(chatUuid){
                         break;
                     case 'leave_room':
                         appendMessage('System', `${payload.leave_room.nick} покинул чат`, false);
-                        activeParticipants.delete(payload.id);
+                        activeParticipants.delete(payload.nick);
                         updateParticipantsList();
                         break;
                     case 'new_message':
