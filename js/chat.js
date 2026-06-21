@@ -8,7 +8,8 @@ function chatInit(chatUuid){
     if (!chatUuid) {
         console.error("UUID не найден в URL");
     } else {
-        const chatSocket = new WebSocket(`wss://nofelet.duckdns.org:8444/chat/${chatUuid}`);
+        // const chatSocket = new WebSocket(`wss://nofelet.duckdns.org:8444/chat/${chatUuid}`);
+        const chatSocket = new WebSocket(`ws://localhost:8444/chat/${chatUuid}`);
 
         chatSocket.onopen = () => {
             console.log("Чат подключен");
