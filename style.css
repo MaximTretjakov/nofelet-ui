@@ -480,17 +480,6 @@ body.chat-open {
     color: #1a1a1a !important;
 }
 
-.chat-badge {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 10px;
-    height: 10px;
-    background: #d93025;
-    border-radius: 50%;
-    display: none;
-}
-
 /* --- КНОПКИ УПРАВЛЕНИЯ (Идентичные близнецы) --- */
 .btn-control {
     width: 60px;
@@ -611,4 +600,31 @@ body.chat-open {
     padding: 1rem;
     border-top: 1px solid #f0f0f2;
     background: #fff;
+}
+
+/* 1. Делаем кнопку «базой» для абсолютного позиционирования бэйджа */
+#chatToggle {
+    position: relative; /* Ключевой момент! */
+    overflow: visible;  /* Чтобы бэйдж не обрезался, если кнопка имеет hidden */
+}
+
+/* 2. Убеждаемся, что бэйдж отображается поверх всего */
+.badge-unread {
+    position: absolute;
+    top: -5px;    /* Подгони под размер кнопки */
+    right: -5px;  /* Подгони под размер кнопки */
+    z-index: 100; /* Чтобы он всегда был сверху */
+
+    /* Добавляем принудительные размеры, чтобы он был виден */
+    /*display: flex !important;*/
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    background-color: #ff3b30;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    pointer-events: none; /* Чтобы не мешал кликам */
 }

@@ -3,6 +3,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const chatUuid = urlParams.get('uuid');
 const activeParticipants = new Map(); // ID -> Nickname
 let currentRecipient = "all"; // "all" или ID пользователя
+let unreadCount = 0;
 
 function chatInit(chatUuid){
     if (!chatUuid) {
@@ -43,6 +44,13 @@ function chatInit(chatUuid){
                         // Обработка входящего сообщения
                         const msg = payload.new_message;
                         appendMessage(msg.sender, msg.content, false);
+                        // Логика счетчика:
+                        const sidebar = document.getElementById('chatSidebar');
+                        // Если класс 'active' отсутствует, значит чат скрыт
+                        if (!sidebar.classList.contains('active')) {
+                            unreadCount++;
+                            updateUnreadBadge();
+                        }
                         break;
                 }
             } catch (e) {
@@ -105,6 +113,12 @@ function toggleChat() {
     const sidebar = document.getElementById('chatSidebar');
     sidebar.classList.toggle('active');
     document.body.classList.toggle('chat-open');
+
+    // Если после переключения класс 'active' появился (чат открылся)
+    if (sidebar.classList.contains('active')) {
+        unreadCount = 0;
+        updateUnreadBadge();
+    }
 }
 
 function switchTab(tabName) {
@@ -150,4 +164,16 @@ function setRecipient(id, nick) {
         input.placeholder = `Сообщение для ${nick}...`;
     }
     switchTab('chat');
+}
+
+function updateUnreadBadge() {
+    const counterEl = document.getElementById('unreadCounter');
+    if (counterEl) {
+        if (unreadCount > 0) {
+            counterEl.textContent = unreadCount;
+            counterEl.style.display = 'flex'; // Или 'block', смотря какой стиль у тебя в CSS
+        } else {
+            counterEl.style.display = 'none';
+        }
+    }
 }
